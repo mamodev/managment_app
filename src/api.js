@@ -14,9 +14,14 @@ async function GET(api, { table, profile, ...args }) {
   return response.data;
 }
 
-function getEndpoint(api, { table, profile, ...args }) {
+function getEndpoint(api, { table, profile, select = "*", ...args }) {
+  select = select.split(",").reduce((object, item) => {
+    if (typeof object !== "string") return { ...object, [item]: true };
+    else return { [object]: true, [item]: true };
+  });
+
   return {
-    key: [table, profile, { ...args }],
+    key: [table, profile, select, { ...args }],
     func: () => GET(api, { table, profile, ...args }),
   };
 }

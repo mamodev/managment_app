@@ -16,6 +16,21 @@ export default function OdvPro() {
     odv_pro_filters
   );
 
+  const cellClickHandler = ({
+    field,
+    row: { lista_testate_id, tipo_decod },
+  }) => {
+    if (field === "numero") {
+      let params = `scrollbars=no,status=no,location=no,toolbar=no,menubar=no,width=850,height=500`;
+      window.open(
+        `${window.origin}/odv_pro/${lista_testate_id}/${
+          tipo_decod === "Ordine" ? "state" : "details"
+        }/?&minimal=true`,
+        `order_status-${lista_testate_id}`,
+        params
+      );
+    }
+  };
   return (
     <Stack p={4} spacing={2}>
       <Typography variant="h4">LISTA TESTATE</Typography>
@@ -24,6 +39,7 @@ export default function OdvPro() {
           columns={odv_pro_columns}
           filterOutlet={FilterOutlet}
           containerProps={{ spacing: 4 }}
+          onCellClick={cellClickHandler}
         />
       </ApiServer>
     </Stack>

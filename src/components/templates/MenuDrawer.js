@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { Box } from "@mui/system";
 import Clock from "components/modules/Clock";
+import { useNavigate } from "react-router-dom";
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
@@ -23,6 +24,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 }));
 
 export default function MenuDrawer({ open, handleClose, width }) {
+  const navigate = useNavigate();
   return (
     <Drawer
       variant="persistent"
@@ -64,13 +66,13 @@ export default function MenuDrawer({ open, handleClose, width }) {
           </ListSubheader>
         }
       >
-        <ListItemButton>
+        <ListItemButton onClick={() => navigate("/")}>
           <ListItemIcon>
             <Home></Home>
           </ListItemIcon>
           <ListItemText primary="Home" />
         </ListItemButton>
-        <ListItemButton>
+        <ListItemButton onClick={() => navigate("/odv_pro")}>
           <ListItemIcon>
             <LocalShipping />
           </ListItemIcon>

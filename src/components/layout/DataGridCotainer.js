@@ -1,3 +1,5 @@
+import { grey } from "@mui/material/colors";
+
 const { styled, Box } = require("@mui/material");
 
 const DataGridContainer = styled(Box)(({ theme }) => ({
@@ -12,6 +14,12 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
     cursor: "pointer",
     color: theme.palette.primary.main,
     textDecoration: "underline",
+  },
+  "& .MuiDataGrid-cell": {
+    backgroundColor: grey[100],
+  },
+  "& .MuiDataGrid-cell--editable": {
+    backgroundColor: "white",
   },
 }));
 
