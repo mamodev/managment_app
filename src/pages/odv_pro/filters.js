@@ -1,3 +1,4 @@
+import { endpoints } from "api";
 import ApiFilterServer from "components/modules/filters/ApiFilterServer";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import DateFilter from "components/modules/filters/DateFilter";
@@ -12,13 +13,7 @@ const odv_pro_filters = [
     defaultValue: null,
     filterRender: (val) => `eq.${val}`,
     componentProps: {
-      query: {
-        table: "domini",
-        select: "cod,note",
-        profile: "core",
-        ambito: "eq.lista",
-        dominio: "eq.tipo",
-      },
+      endpoint: endpoints.ODV_PRO_TYPE,
       children: AutocompleteFilter,
       mapData: (data) => data.cod,
       dataName: "options",
@@ -33,13 +28,7 @@ const odv_pro_filters = [
     defaultValue: null,
     filterRender: (val) => `eq.${val.cod}`,
     componentProps: {
-      query: {
-        table: "domini",
-        select: "cod,note",
-        profile: "core",
-        ambito: "eq.odv",
-        dominio: "eq.stato",
-      },
+      endpoint: endpoints.ODV_PRO_STATE,
       children: AutocompleteFilter,
       mapData: (data) => ({ label: data.note, cod: data.cod }),
       dataName: "options",
@@ -55,11 +44,7 @@ const odv_pro_filters = [
     defaultValue: null,
     filterRender: (val) => `eq.${val.sede}`,
     componentProps: {
-      query: {
-        table: "sedi",
-        select: "sede,dex",
-        profile: "core",
-      },
+      endpoint: endpoints.SITES,
       children: AutocompleteFilter,
       mapData: (data) => ({ label: data.dex, sede: data.sede }),
       dataName: "options",
@@ -75,11 +60,7 @@ const odv_pro_filters = [
     defaultValue: null,
     filterRender: (val) => `eq.${val.id}`,
     componentProps: {
-      query: {
-        table: "persone_con_odv",
-        select: "id,denom",
-        profile: "core",
-      },
+      endpoint: endpoints.SELLERS,
       children: AutocompleteFilter,
       mapData: (data) => ({ label: data.denom, id: data.id }),
       dataName: "options",

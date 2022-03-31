@@ -1,26 +1,27 @@
-import { getEndpoint } from "api";
 import AuthContext from "context/AuthContext";
-import React, { useContext } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import React, { useContext, useEffect, useState } from "react";
+import { useQuery } from "react-query";
 
-export default function ApiServer({ query, children }) {
+export default function ApiServer({ endpoint, children, filters, params }) {
   const { api } = useContext(AuthContext);
-  const { key, func } = getEndpoint(api, query);
-  const { data, isSuccess } = useQuery(key, func);
-  const client = useQueryClient();
+  const { key, func } = endpoint(api, params, filters);
+  const { data, isFetching } = useQuery(key, func);
 
-  const invalidate = () => {
-    client.invalidateQueries(key);
-  };
+  const [dataState, setDataState] = useState(null);
+
+  useEffect(() => {
+    if (!isFetching) {
+      setDataState(data);
+    }
+  }, [isFetching]);
 
   return (
     <>
-      {isSuccess &&
+      {dataState &&
         React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(child, {
-              data,
-              invalidate: invalidate,
+              data: dataState,
             });
           }
           return child;

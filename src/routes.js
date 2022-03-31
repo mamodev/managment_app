@@ -1,5 +1,5 @@
-import { Box } from "@mui/system";
 import PageLayout from "components/layout/PageLayout";
+import GruppoFatturazione from "pages/gruppo_fatturazione/GruppoFatturazione";
 import Home from "pages/home/Home";
 import OdvPro from "pages/odv_pro/OdvPro";
 import OdvProDetails from "pages/odv_pro/[id]/details/OdvProDetails";
@@ -19,6 +19,11 @@ export default function Router() {
             <Route path="details" element={<OdvProDetails />} />
           </Route>
         </Route>
+
+        <Route
+          path="gruppo_fatturazione/:id"
+          element={<GruppoFatturazione />}
+        />
       </Route>
     </Routes>
   );

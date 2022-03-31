@@ -1,6 +1,6 @@
 const odv_pro_state_summary = [
   {
-    field: "seq",
+    field: "id",
     headerName: "Seq",
     align: "center",
     sortable: false,
@@ -51,6 +51,7 @@ const odv_pro_state_summary = [
     sortable: false,
     align: "center",
     width: 80,
+    cellClassName: "super-app-theme--link",
   },
   {
     field: "gru_cons_id",

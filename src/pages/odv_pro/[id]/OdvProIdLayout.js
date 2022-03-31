@@ -1,4 +1,5 @@
 import { Button, Stack, Typography } from "@mui/material";
+import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataHeader from "components/templates/ApiDataHeader";
 import {
@@ -20,15 +21,7 @@ export default function OdvProIdLayout() {
         spacing={4}
         width={{ xs: "100%", md: "90%", lg: "80%", xl: "70%" }}
       >
-        <ApiServer
-          query={{
-            table: "v_lista_testate_con_tot",
-            select:
-              "lista_testate_id,tipo_decod, numero,del, venditore, sede,denom, luogo, telefoni,prz_tot_non_ivato, prz_tot_ivato, costo_un_orig, margine",
-            profile: "vend",
-            lista_testate_id: `eq.${id}`,
-          }}
-        >
+        <ApiServer endpoint={endpoints.ODV_PRO_HEADER} params={{ id }}>
           <Title />
           <ApiDataHeader columns={odv_pro_id_header_columns} />
           <OutletWithProps />

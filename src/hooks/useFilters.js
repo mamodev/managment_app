@@ -1,14 +1,14 @@
 import { Button, Stack } from "@mui/material";
 import { useState } from "react";
 
-export default function useFilters(queryBase, filters = []) {
+export default function useFilters(filters = []) {
   const [state, setState] = useState(filters.map((e) => e.defaultValue));
-  const [query, setQuery] = useState(queryBase);
+  const [query, setQuery] = useState({});
 
   const sendQuery = () => {
     setQuery(() => {
-      const newQuery = { ...queryBase };
-      for (let i = 0; i < filters.length; ++i)
+      const newQuery = {};
+      for (let i = 0; i < filters.length; ++i) {
         if (filters[i].defaultValue !== state[i]) {
           if (newQuery[filters[i].name] !== undefined) {
             if (Array.isArray(newQuery[filters[i].name]))
@@ -23,6 +23,7 @@ export default function useFilters(queryBase, filters = []) {
               ];
           } else newQuery[filters[i].name] = filters[i].filterRender(state[i]);
         }
+      }
 
       return newQuery;
     });

@@ -1,11 +1,7 @@
 import { TextField } from "@mui/material";
+import React from "react";
 
-export default function TextFilter({
-  value,
-  onChange: setValue,
-  placeholder,
-  ...props
-}) {
+function TextFilter({ value, onChange: setValue, placeholder, ...props }) {
   return (
     <TextField
       {...props}
@@ -15,3 +11,5 @@ export default function TextFilter({
     />
   );
 }
+
+export default TextFilter;

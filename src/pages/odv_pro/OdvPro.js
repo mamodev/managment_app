@@ -1,4 +1,5 @@
 import { Stack, Typography } from "@mui/material";
+import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataList from "components/templates/ApiDataList";
 import useFilters from "hooks/useFilters";
@@ -6,15 +7,7 @@ import odv_pro_columns from "./columns";
 import odv_pro_filters from "./filters";
 
 export default function OdvPro() {
-  const { FilterOutlet, query } = useFilters(
-    {
-      table: "v_lista_testate",
-      profile: "vend",
-      select:
-        "tipo_decod,numero,del,denom,sede,venditore,data_ult_modif,stato_dex, stato_cod,lista_testate_id",
-    },
-    odv_pro_filters
-  );
+  const { FilterOutlet, query } = useFilters(odv_pro_filters);
 
   const cellClickHandler = ({
     field,
@@ -34,7 +27,7 @@ export default function OdvPro() {
   return (
     <Stack p={4} spacing={2}>
       <Typography variant="h4">LISTA TESTATE</Typography>
-      <ApiServer query={query}>
+      <ApiServer endpoint={endpoints.ODV_PRO_LIST} filters={query}>
         <ApiDataList
           columns={odv_pro_columns}
           filterOutlet={FilterOutlet}

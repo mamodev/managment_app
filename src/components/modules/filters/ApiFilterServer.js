@@ -1,17 +1,18 @@
-import { getEndpoint } from "api";
 import AuthContext from "context/AuthContext";
 import { useContext } from "react";
 import { useQuery } from "react-query";
 
 export default function ApiFilterServer({
-  query,
+  endpoint,
+  filters,
+  params,
   children: Children,
   dataName = "data",
   mapData = (e) => e,
   ...props
 }) {
   const { api } = useContext(AuthContext);
-  const { key, func } = getEndpoint(api, query);
+  const { key, func } = endpoint(api, params, filters);
 
   const { isSuccess, data } = useQuery(key, func);
   const dataEncoded = {};
