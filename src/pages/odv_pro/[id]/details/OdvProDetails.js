@@ -1,12 +1,27 @@
-import { Add, Delete, Link, SettingsBackupRestore } from "@mui/icons-material";
-import { Button, Dialog } from "@mui/material";
+import {
+  AccountTree,
+  Add,
+  Delete,
+  Link,
+  SettingsBackupRestore,
+} from "@mui/icons-material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import { Box } from "@mui/system";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataList from "components/templates/ApiDataList";
 import { useCallback, useContext, useState } from "react";
 import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { odv_pro_id_details } from "./columns";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { endpoints, POST } from "api";
 import AuthContext from "context/AuthContext";
 import CreateProductDialog from "pages/odv_pro/[id]/details/CreateProductDialog";
@@ -31,15 +46,97 @@ function AddProduct({ data }) {
     </Box>
   );
 }
-function AddProject({ data }) {
+function AddProject() {
+  const { api } = useContext(AuthContext);
+  const { cliente_id, lista_testate_id } = useOutletContext();
+  const { key, func } = endpoints.PRO_FOR_ODV(api, cliente_id);
   const [open, setOpen] = useState(false);
+  const { data, isSuccess } = useQuery(key, func);
+  const queryClient = useQueryClient();
+  const { mutate, isLoading } = useMutation(
+    (data) =>
+      POST(api, {
+        table: "lista_righe_cre",
+        profile: "vend",
+        data,
+      }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["ODV_PRO", "HEADER", lista_testate_id], {
+          exact: true,
+        });
+        queryClient.invalidateQueries(
+          ["ODV_PRO", "DETAILED_LIST", lista_testate_id],
+          {
+            exact: true,
+          }
+        );
+        queryClient.invalidateQueries(
+          ["ODV_PRO", "SUMMARY_LIST", lista_testate_id],
+          {
+            exact: true,
+          }
+        );
+        setOpen(false);
+      },
+    }
+  );
+
   return (
     <Box>
-      <Button startIcon={<Link />} onClick={() => setOpen(true)}>
-        Collega progetto
-      </Button>
+      {isSuccess && data?.length > 0 && (
+        <Button startIcon={<Link />} onClick={() => setOpen(true)}>
+          Collega progetto
+        </Button>
+      )}
       <Dialog open={open} onClose={() => setOpen(false)}>
-        Ciao
+        <Box p={2}>
+          <Typography variant="h6" mb={2}>
+            Seleziona un progetto
+          </Typography>
+          <List
+            sx={{
+              width: "100%",
+              bgcolor: "background.paper",
+              overflow: "auto",
+              maxHeight: 300,
+            }}
+          >
+            {data?.map((e, i) => (
+              <ListItemButton
+                key={i}
+                onClick={() =>
+                  mutate({
+                    in_lista_id: 0,
+                    in_lista_testate_id: lista_testate_id,
+                    in_riga_prog_orig_id: e.id,
+                    in_art_id: null,
+                    in_marchio: null,
+                    in_linea: null,
+                    in_codice: null,
+                    in_dex: null,
+                    in_costo_un_orig: 0,
+                    in_ricar_su_prog: 0,
+                    in_sconto_vend: 0,
+                    in_qta: 0,
+                    in_cond_id: null,
+                  })
+                }
+              >
+                <ListItemIcon>
+                  <AccountTree />
+                </ListItemIcon>
+                <ListItemText
+                  primary={isLoading ? "Aggiungo...." : e.numero}
+                  secondary={e.del}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Chiudi</Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

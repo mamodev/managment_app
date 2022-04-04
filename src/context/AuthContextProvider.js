@@ -13,7 +13,9 @@ export default function AuthContextProvider({ children }) {
   });
   const api = useRef(instance);
   return (
-    <AuthContext.Provider value={{ api: api.current }}>
+    <AuthContext.Provider
+      value={{ api: api.current, sede: "MONTEV", vendId: 1 }}
+    >
       {children}
     </AuthContext.Provider>
   );

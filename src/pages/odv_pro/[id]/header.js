@@ -46,7 +46,7 @@ const odv_pro_id_header_columns = [
     },
     {
       name: "Costi",
-      id: "costo_un_orig",
+      id: "costo_tot_mio",
     },
     {
       name: "Margine",

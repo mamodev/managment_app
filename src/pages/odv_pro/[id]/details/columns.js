@@ -42,7 +42,7 @@ const odv_pro_id_details = [
     width: 200,
   },
   {
-    field: "costo_un_orig",
+    field: "prezzo_un_lordo",
     cellClassName: "super-app-theme--green",
     headerName: "Prezzo un.",
     width: 120,

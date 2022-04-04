@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Stack, styled } from "@mui/material";
 import {
   DataGrid,
   GridActionsCellItem,
@@ -17,10 +17,20 @@ function ToolBar({ rows, toolbarActions }) {
   );
 }
 
+const StyledDataGrid = styled(DataGrid)({
+  "& .MuiDataGrid-footerContainer": {
+    minHeight: 0,
+  },
+});
+
+function CustomPagination() {
+  return <div></div>;
+}
+
 export default function ApiDataList({
+  verbose = false,
   columns: defaultColumns,
   data = [],
-  pageSize = 10,
   filterOutlet,
   containerProps = {},
   toolbarActions = [],
@@ -29,6 +39,8 @@ export default function ApiDataList({
   rowActionsPosition = "start",
   ...props
 }) {
+  if (verbose) console.log(data);
+
   const [columns, setColumns] = useState(defaultColumns);
 
   const rows = data.map((e, i) => ({ id: i, ...e }));
@@ -67,23 +79,24 @@ export default function ApiDataList({
     <Stack spacing={2} {...containerProps}>
       {filterOutlet}
       <DataGridContainer>
-        <DataGrid
-          {...props}
+        <StyledDataGrid
+          autoHeight
           rowHeight={40}
           columns={columns}
           rows={rows}
-          pageSize={pageSize}
-          rowsPerPageOptions={[pageSize]}
+          pageSize={rows.length}
           disableSelectionOnClick
           disableColumnFilter={true}
           disableColumnMenu
           components={{
             Toolbar: ToolBar,
+            Pagination: CustomPagination,
           }}
           componentsProps={{
             toolbar: { rows, toolbarActions },
           }}
           onCellEditCommit={cellEditCommitHandler}
+          {...props}
         />
       </DataGridContainer>
     </Stack>
