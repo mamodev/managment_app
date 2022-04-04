@@ -47,7 +47,6 @@ export default function ClientSelector({ value, onChange: setValue }) {
 
   useEffect(() => open && refetch(), [open]);
 
-  console.log(filter, data);
   return (
     <Box>
       <Box

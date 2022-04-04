@@ -31,7 +31,7 @@ const endpoints = {
         table: "v_lista_testate",
         profile: "vend",
         select:
-          "tipo_decod,numero,del,denom,sede,venditore,data_ult_modif,stato_dex, stato_cod,lista_testate_id",
+          "tipo_decod,numero,del,denom,sede,venditore,data_ult_modif,stato_dex, stato_cod,lista_testate_id,cliente_id",
         ...filters,
       }),
   }),

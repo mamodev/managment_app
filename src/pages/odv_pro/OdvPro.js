@@ -23,70 +23,17 @@ import { useMutation, useQueryClient } from "react-query";
 import odv_pro_columns from "./columns";
 import odv_pro_filters from "./filters";
 
-function AddOrder() {
-  const [open, setOpen] = useState(false);
-  const { api, sede, vendId } = useAuthContext();
-
-  const [client, setClient] = useState(null);
-
-  const queryClient = useQueryClient();
-  const { mutate: create, isLoading } = useMutation(
-    (data) =>
-      POST(api, { table: "lista_testate_cre", profile: "vend", data: data }),
-    {
-      onSuccess: () => {
-        setOpen(false);
-        queryClient.invalidateQueries(["ODV_PRO_LIST"]);
-      },
-    }
-  );
-
-  useEffect(() => {
-    if (open) {
-      setClient(null);
-    }
-  }, [open]);
-  return (
-    <Box>
-      <Button startIcon={<Add />} onClick={() => setOpen(true)}>
-        Aggiungi
-      </Button>
-
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Aggiungi</DialogTitle>
-        <DialogContent>
-          <Stack direction="row" spacing={2} mt={1}>
-            <ClientSelector value={client} onChange={(val) => setClient(val)} />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <LoadingButton
-            loading={isLoading}
-            variant="contained"
-            disabled={!client}
-            onClick={() =>
-              create({
-                in_tipo: "V",
-                in_sede: sede,
-                in_cliente_id: client.id,
-                in_venditore: vendId,
-              })
-            }
-          >
-            Crea
-          </LoadingButton>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => setOpen(false)}
-          >
-            Chiudi
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
-  );
-}
+const AddOrder = (setOpen) => {
+  return function Component() {
+    return (
+      <Box>
+        <Button startIcon={<Add />} onClick={() => setOpen(true)}>
+          Aggiungi
+        </Button>
+      </Box>
+    );
+  };
+};
 export default function OdvPro() {
   const { FilterOutlet, query } = useFilters(odv_pro_filters);
 
@@ -105,6 +52,10 @@ export default function OdvPro() {
       );
     }
   };
+
+  const [open, setOpen] = useState(false);
+  const [defaultClient, setDefaultClient] = useState(null);
+
   return (
     <Box sx={{ marginBottom: 3 }}>
       <Stack p={4} spacing={2}>
@@ -115,10 +66,104 @@ export default function OdvPro() {
             filterOutlet={FilterOutlet}
             containerProps={{ spacing: 4 }}
             onCellClick={cellClickHandler}
-            toolbarActions={[AddOrder]}
+            toolbarActions={[AddOrder(setOpen)]}
+            rowActions={[
+              {
+                icon: <Add />,
+                func: ({ row: { cliente_id, denom } }) => {
+                  setDefaultClient({ id: cliente_id, denom });
+                  setOpen(true);
+                },
+              },
+            ]}
+            rowActionsPosition="end"
           />
         </ApiServer>
+
+        <CreateOrderDialog
+          open={open}
+          onClose={() => {
+            setOpen(false);
+            if (defaultClient) setDefaultClient(null);
+          }}
+          defaultClient={defaultClient}
+        />
       </Stack>
     </Box>
+  );
+}
+
+function CreateOrderDialog({ open, defaultClient, onClose: close }) {
+  const { api, sede, vendId } = useAuthContext();
+
+  const [client, setClient] = useState(null);
+  const [type, setType] = useState(null);
+
+  const queryClient = useQueryClient();
+  const { mutate: create, isLoading } = useMutation(
+    (data) =>
+      POST(api, { table: "lista_testate_cre", profile: "vend", data: data }),
+    {
+      onSuccess: () => {
+        close();
+        queryClient.invalidateQueries(["ODV_PRO"]);
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (open) {
+      setClient(null);
+      setType(null);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (defaultClient) setClient(defaultClient);
+  }, [defaultClient]);
+
+  return (
+    <Dialog open={open} onClose={() => close}>
+      <DialogTitle>Aggiungi</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} mt={1}>
+          <Autocomplete
+            value={type}
+            onChange={(e, v) => setType(v)}
+            isOptionEqualToValue={(option, value) =>
+              option.label === value.label
+            }
+            options={[
+              { id: "V", label: "Ordine" },
+              { id: "P", label: "Progetto" },
+            ]}
+            renderInput={(props) => (
+              <TextField {...props} size="small" label="Tipo" />
+            )}
+          />
+          <ClientSelector value={client} onChange={(val) => setClient(val)} />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <LoadingButton
+          loading={isLoading}
+          variant="contained"
+          disabled={!client || !type}
+          onClick={() =>
+            create({
+              in_tipo: type.id,
+              in_sede: sede,
+              in_cliente_id: client.id,
+              in_venditore: vendId,
+            })
+          }
+        >
+          Crea
+        </LoadingButton>
+        <Button variant="contained" color="error" onClick={() => close()}>
+          Chiudi
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

@@ -42,7 +42,6 @@ export default function ApiDataList({
   if (verbose) console.log(data);
 
   const [columns, setColumns] = useState(defaultColumns);
-
   const rows = data.map((e, i) => ({ id: i, ...e }));
 
   useEffect(() => {
