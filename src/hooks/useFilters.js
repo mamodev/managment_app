@@ -1,6 +1,7 @@
 import { Button, Stack } from "@mui/material";
 import { useState } from "react";
 
+//TODO force refetch on send
 export default function useFilters(filters = []) {
   const [state, setState] = useState(filters.map((e) => e.defaultValue));
   const [query, setQuery] = useState({});

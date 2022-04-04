@@ -26,6 +26,8 @@ import { endpoints, POST } from "api";
 import AuthContext from "context/AuthContext";
 import CreateProductDialog from "pages/odv_pro/[id]/details/CreateProductDialog";
 
+//TODO aggiungi solo in modifica
+
 function AddProduct({ data }) {
   const [open, setOpen] = useState(false);
   const { id } = useParams();
@@ -185,8 +187,7 @@ export default function OdvProDetails() {
       in_codice: row.codice,
       in_dex: row.dex,
       in_dex2: row.dex2,
-      in_costo_un_orig: row.costo_un_orig,
-      in_ricar_su_prog: row.ricar_su_prog ? row.ricar_su_prog : 0,
+      in_prezzo_un_lordo: row.costo_un_orig,
       in_sconto_vend: row.sconto_vend ? row.sconto_vend : 0,
       in_qta: row.qta,
     });

@@ -23,7 +23,7 @@ const DEFAULT_STATE = {
   qta: "1",
   sconto: "0",
   codice: "",
-  prezzo_un: "",
+  prezzo_un: "0",
 };
 
 export default function CreateProductDialog({ id, ...dialogProps }) {
@@ -76,15 +76,13 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
       in_linea: product.linea,
       in_codice: fields.codice,
       in_dex: product.art_dex,
-      in_costo_un_orig: parseFloat(fields.prezzo_un),
-      in_ricar_su_prog: 0,
+      in_prezzo_un_lordo: parseFloat(fields.prezzo_un),
       in_sconto_vend: parseFloat(fields.sconto),
       in_qta: parseFloat(fields.qta),
-      in_cond_id: 3,
+      in_cond_id: product.cond_id,
     });
   };
 
-  console.log(product);
   const isSendable =
     product &&
     (!product.obblig_codice ||
@@ -98,6 +96,7 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
     product.cod_iva !== "" &&
     fields.prezzo_un !== "";
 
+  console.log(product);
   return (
     <Dialog
       {...dialogProps}
