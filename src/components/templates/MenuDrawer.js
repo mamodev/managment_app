@@ -1,4 +1,9 @@
-import { ChevronLeft, Home, LocalShipping } from "@mui/icons-material";
+import {
+  ChevronLeft,
+  Home,
+  InventoryRounded,
+  PeopleRounded,
+} from "@mui/icons-material";
 import {
   Avatar,
   Drawer,
@@ -74,9 +79,15 @@ export default function MenuDrawer({ open, handleClose, width }) {
         </ListItemButton>
         <ListItemButton onClick={() => navigate("/odv_pro")}>
           <ListItemIcon>
-            <LocalShipping />
+            <InventoryRounded />
           </ListItemIcon>
           <ListItemText primary="Ordini" />
+        </ListItemButton>
+        <ListItemButton onClick={() => navigate("/clienti")}>
+          <ListItemIcon>
+            <PeopleRounded />
+          </ListItemIcon>
+          <ListItemText primary="Clienti" />
         </ListItemButton>
       </List>
       <Stack sx={{ position: "absolute", bottom: 0, width: "100%" }}>

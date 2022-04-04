@@ -1,4 +1,5 @@
 import PageLayout from "components/layout/PageLayout";
+import Clienti from "pages/clienti/Clienti";
 import GruppoFatturazione from "pages/gruppo_fatturazione/GruppoFatturazione";
 import Home from "pages/home/Home";
 import OdvPro from "pages/odv_pro/OdvPro";
@@ -18,6 +19,9 @@ export default function Router() {
             <Route path="state" element={<OdvProState />} />
             <Route path="details" element={<OdvProDetails />} />
           </Route>
+        </Route>
+        <Route path="clienti/*">
+          <Route index element={<Clienti />} />
         </Route>
 
         <Route
