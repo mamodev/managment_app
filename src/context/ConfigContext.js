@@ -1,21 +1,69 @@
 import { endpoints } from "api";
-import React, { useContext } from "react";
-import { useQuery } from "react-query";
+import { useSnackbar } from "notistack";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useAuthContext } from "./AuthContext";
 const ConfigContext = React.createContext({});
 
+async function fetchConfig(api, func) {
+  let res;
+  try {
+    res = await func();
+    return res ? JSON.parse(res.replaceAll("£", '"')) : {};
+  } catch (error) {
+    console.error("Error while loading config endpoint");
+    console.error(error);
+    return {};
+  }
+}
+
 function ConfigContextProvider({ children }) {
   const { api } = useAuthContext();
-  const { key, func } = endpoints.CONFIG(api);
-  const { data } = useQuery(key, func);
+  const { enqueueSnackbar } = useSnackbar();
 
-  const decodedConfig = data
-    ? JSON.parse(data.replaceAll("£", '"'))
-    : undefined;
+  const { func } = useMemo(() => endpoints.CONFIG(api), [api]);
+  const [config, setConfig] = useState(null);
+
+  const updateConfig = useCallback((config) => {
+    console.log(config);
+    setConfig(config);
+    localStorage.setItem("config", JSON.stringify(config));
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      const storedConfig = localStorage.getItem("config");
+      if (storedConfig) {
+        let jsonConfig;
+        try {
+          jsonConfig = JSON.parse(storedConfig);
+          setConfig(jsonConfig);
+        } catch (e) {
+          updateConfig(await fetchConfig(api, func));
+        }
+      } else updateConfig(await fetchConfig(api, func));
+    };
+    load();
+  }, [api, func, updateConfig]);
+
+  const reloadConfig = useCallback(() => {
+    const load = async () => {
+      updateConfig(await fetchConfig(api, func));
+      enqueueSnackbar("Configurazione caricata con successo", {
+        variant: "success",
+      });
+    };
+    load();
+  }, [api, func, updateConfig, enqueueSnackbar]);
 
   return (
-    <ConfigContext.Provider value={decodedConfig}>
-      {decodedConfig && children}
+    <ConfigContext.Provider value={{ ...config, reloadConfig }}>
+      {config && children}
     </ConfigContext.Provider>
   );
 }

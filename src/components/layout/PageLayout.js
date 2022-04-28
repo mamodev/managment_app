@@ -1,6 +1,7 @@
 import {
   CancelPresentation,
   Menu as MenuIcon,
+  Refresh,
   Settings,
   WindowRounded,
 } from "@mui/icons-material";
@@ -9,6 +10,7 @@ import {
   Box,
   Checkbox,
   IconButton,
+  ListItemIcon,
   Menu,
   MenuItem,
   Stack,
@@ -21,6 +23,7 @@ import { useRef, useState } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
 import PageContainer from "./PageContainer";
 import anime from "animejs";
+import { useConfig } from "context/ConfigContext";
 
 const drawerWidth = 250;
 
@@ -65,6 +68,8 @@ export default function PageLayout() {
     toggleOpenAlwaysNewTab,
     openedWindows,
   } = useWindowManagerContext();
+
+  const { reloadConfig } = useConfig();
 
   return (
     <Box>
@@ -121,6 +126,10 @@ export default function PageLayout() {
                         ml: -0.5,
                         mr: 1,
                       },
+                      "& .MuiList-root": {
+                        pt: 0.5,
+                        pb: 0.5,
+                      },
                       "&:before": {
                         content: '""',
                         display: "block",
@@ -156,6 +165,7 @@ export default function PageLayout() {
                     onClick={toggleOpenAlwaysNewTab}
                     sx={{ justifyContent: "space-between" }}
                     dense
+                    divider
                   >
                     Apri sempre una nuova finestra
                     <Checkbox
@@ -163,6 +173,14 @@ export default function PageLayout() {
                       size="small"
                       sx={{ ml: 1, p: 0.5 }}
                     />
+                  </MenuItem>
+                  <MenuItem
+                    onClick={reloadConfig}
+                    sx={{ justifyContent: "space-between" }}
+                    dense
+                  >
+                    Ricarica configurazione
+                    <Refresh sx={{ fontSize: 20, pr: 0.5 }} />
                   </MenuItem>
                 </Menu>
               </Stack>
