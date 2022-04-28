@@ -1,5 +1,6 @@
 import {
   ChevronLeft,
+  FactoryRounded,
   Home,
   InventoryRounded,
   PeopleRounded,
@@ -15,10 +16,12 @@ import {
   ListSubheader,
   Stack,
   styled,
+  Switch,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import Clock from "components/modules/Clock";
+import { useWindowManagerContext } from "context/WindowManagerContext";
 import { useNavigate } from "react-router-dom";
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -30,6 +33,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 export default function MenuDrawer({ open, handleClose, width }) {
   const navigate = useNavigate();
+
   return (
     <Drawer
       variant="persistent"
@@ -89,9 +93,16 @@ export default function MenuDrawer({ open, handleClose, width }) {
           </ListItemIcon>
           <ListItemText primary="Clienti" />
         </ListItemButton>
+        <ListItemButton onClick={() => navigate("/fornitori")}>
+          <ListItemIcon>
+            <FactoryRounded />
+          </ListItemIcon>
+          <ListItemText primary="Fornitori" />
+        </ListItemButton>
       </List>
+
       <Stack sx={{ position: "absolute", bottom: 0, width: "100%" }}>
-        <Stack direction="row" spacing={2} alignItems="center" p={2}>
+        <Stack direction="row" spacing={2} alignItems="center" p={2} pb={1}>
           <Avatar
             sx={{
               borderRadius: 1,
@@ -107,7 +118,6 @@ export default function MenuDrawer({ open, handleClose, width }) {
             <Typography>Cognome</Typography>
           </Stack>
         </Stack>
-
         <Box sx={{ bgcolor: "primary.main", color: "primary.contrastText" }}>
           <Clock />
         </Box>

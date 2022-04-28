@@ -1,5 +1,8 @@
 import PageLayout from "components/layout/PageLayout";
 import Clienti from "pages/clienti/Clienti";
+import ClientDetails from "pages/clienti/[id]/ClientDetails";
+import Providers from "pages/fornitori/Providers";
+import GruppoConsegna from "pages/gruppo_consegna/GruppoConsegna";
 import GruppoFatturazione from "pages/gruppo_fatturazione/GruppoFatturazione";
 import Home from "pages/home/Home";
 import OdvPro from "pages/odv_pro/OdvPro";
@@ -22,12 +25,18 @@ export default function Router() {
         </Route>
         <Route path="clienti/*">
           <Route index element={<Clienti />} />
+          <Route path=":id" element={<ClientDetails />} />
+        </Route>
+        <Route path="fornitori/*">
+          <Route index element={<Providers />} />
+          <Route path=":id" element={<ClientDetails />} />
         </Route>
 
         <Route
           path="gruppo_fatturazione/:id"
           element={<GruppoFatturazione />}
         />
+        <Route path="gruppo_consegna/:id" element={<GruppoConsegna />} />
       </Route>
     </Routes>
   );

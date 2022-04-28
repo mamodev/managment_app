@@ -2,7 +2,6 @@ import { Add } from "@mui/icons-material";
 import { Button, Stack, Typography } from "@mui/material";
 import { endpoints } from "api";
 import FormTextField from "components/base/FormTextField";
-import LabelSwitch from "components/base/LabelSwitch";
 import ApiServer from "components/layout/ApiServer";
 import TextFilter from "components/modules/filters/TextFilter";
 import ApiDataForm from "components/templates/ApiDataForm";
@@ -11,38 +10,10 @@ import { useAuthContext } from "context/AuthContext";
 import { useWindowManagerContext } from "context/WindowManagerContext";
 import useFilters from "hooks/useFilters";
 import { useState } from "react";
-import clienti_columns from "./columns";
+import providers_columns from "./columns";
 
-//TODO ORGANIZE IN MULTIPLE FILES
-//FIXME sistemare creazione cliente non persona fisica
 const fields = [
   {
-    id: "type_switch",
-    include: false,
-    Component: LabelSwitch,
-    defaultValue: true,
-    componentProps: { label: "Persona fisica" },
-  },
-  {
-    xs: 6,
-    conditionallyRendered: { id: "type_switch", value: true },
-    id: "in_nome",
-    defaultValue: "",
-    Component: FormTextField,
-    componentProps: { fullWidth: true, placeholder: "Nome" },
-    required: true,
-  },
-  {
-    xs: 6,
-    conditionallyRendered: { id: "type_switch", value: true },
-    id: "in_cognome",
-    defaultValue: "",
-    Component: FormTextField,
-    componentProps: { fullWidth: true, placeholder: "Cognome" },
-    required: true,
-  },
-  {
-    conditionallyRendered: { id: "type_switch", value: false },
     id: "in_denom",
     defaultValue: "",
     Component: FormTextField,
@@ -139,9 +110,9 @@ const fields = [
   },
 ];
 
-export default function Clienti() {
+export default function Providers() {
   const { api } = useAuthContext();
-  const [addPersonOpen, setAddPersonOpen] = useState(false);
+  const [addProviderOpen, setAddProviderOpen] = useState(false);
   const { newWindow } = useWindowManagerContext();
   const { FilterOutlet, query } = useFilters([
     {
@@ -170,27 +141,25 @@ export default function Clienti() {
   return (
     <Stack p={3} spacing={2}>
       <Typography variant="h4" sx={{ textTransform: "uppercase" }}>
-        Lista clienti
+        Lista fornitori
       </Typography>
 
-      <ApiServer endpoint={endpoints.CLIENTS} filters={query}>
+      <ApiServer endpoint={endpoints.PROVIDERS} filters={query}>
         <ApiDataList
-          columns={clienti_columns}
+          columns={providers_columns}
           filterOutlet={FilterOutlet}
-          onRowClick={(e) => {
+          onRowClick={(e) =>
             newWindow({
-              url: `/clienti/${e.id}`,
-              name: "Cliente",
-              params: e.row.denom,
-              w: 420,
-              h: 490,
-            });
-          }}
+              url: `/fornitori/${e.id}`,
+              name: "Fornitori",
+              params: e.id,
+            })
+          }
           getRowClassName={() => `super-app-theme--select`}
           toolbarActions={[
             () => (
               <Button
-                onClick={() => setAddPersonOpen(true)}
+                onClick={() => setAddProviderOpen(true)}
                 startIcon={<Add />}
               >
                 Aggiungi
@@ -199,26 +168,15 @@ export default function Clienti() {
           ]}
         />
       </ApiServer>
-
       <ApiDataForm
-        endpoint={endpoints.CLIENTS(api).add}
+        endpoint={endpoints.PROVIDERS(api).add}
         callback={({ id }) =>
-          newWindow({
-            url: `/clienti/${id}`,
-            name: "Clienti",
-            params: id,
-            w: 420,
-            h: 490,
-          })
+          newWindow({ url: `/fornitori/${id}`, name: "Fornitori", params: id })
         }
-        send={(mutate, fields) => {
-          if (!fields.in_nome) fields.in_nome = "";
-          if (!fields.in_cognome) fields.in_cognome = "";
-          mutate(fields);
-        }}
-        title="Aggiungi cliente"
-        open={addPersonOpen}
-        onClose={() => setAddPersonOpen(false)}
+        send={(mutate, fields) => mutate(fields)}
+        title="Aggiungi fornitore"
+        open={addProviderOpen}
+        onClose={() => setAddProviderOpen(false)}
         fields={fields}
       />
     </Stack>

@@ -1,13 +1,12 @@
 import { Button, Stack } from "@mui/material";
 import { useState } from "react";
 
-//TODO force refetch on send
 export default function useFilters(filters = []) {
   const [state, setState] = useState(filters.map((e) => e.defaultValue));
   const [query, setQuery] = useState({});
 
   const sendQuery = () => {
-    setQuery(() => {
+    setQuery((old) => {
       const newQuery = {};
       for (let i = 0; i < filters.length; ++i) {
         if (filters[i].defaultValue !== state[i]) {
@@ -24,18 +23,19 @@ export default function useFilters(filters = []) {
               ];
           } else newQuery[filters[i].name] = filters[i].filterRender(state[i]);
         }
+        newQuery.queryCount =
+          old.queryCount !== undefined ? old.queryCount + 1 : 0;
       }
-
       return newQuery;
     });
   };
-
   const resetFilters = () => {
     setState(filters.map((e) => e.defaultValue));
   };
 
   const FilterOutlet = (
     <Stack
+      onKeyUp={({ code }) => code === "Enter" && sendQuery()}
       direction="row"
       alignItems="center"
       sx={{ flexWrap: "wrap", rowGap: 2, gap: 2 }}
@@ -62,7 +62,7 @@ export default function useFilters(filters = []) {
         onClick={sendQuery}
         sx={{ height: "fit-content" }}
       >
-        Invia
+        Lista
       </Button>
       <Button
         variant="contained"

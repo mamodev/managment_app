@@ -24,6 +24,7 @@ const odv_pro_id_header_columns = [
     },
     {
       name: "",
+      multiline: true,
       id: "luogo",
     },
     {

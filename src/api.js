@@ -1,7 +1,7 @@
-const verbose = false;
-
+//TODO add limit to querys
+//TODO optimize select param of GET querys
 async function GET(api, { table, profile, ...args }) {
-  let query = table + "?";
+  let query = table + (!!Object.keys(args).length ? "?" : "");
   for (let arg in args) {
     if (Array.isArray(args[arg])) {
       for (let subArg of args[arg]) {
@@ -28,37 +28,81 @@ const endpoints = {
     key: ["ODV_PRO", filters],
     func: () =>
       GET(api, {
-        table: "v_lista_testate",
+        table: "v_odv",
         profile: "vend",
-        select:
-          "tipo_decod,numero,del,denom,sede,venditore,data_ult_modif,stato_dex, stato_cod,lista_testate_id,cliente_id",
         ...filters,
       }),
+    add: {
+      func: (data) =>
+        POST(api, { table: "odv_cre", profile: "vend", data: data }),
+
+      revalidate: (data, queryClient) =>
+        queryClient.invalidateQueries(["ODV_PRO"]),
+    },
   }),
 
   ODV_PRO_HEADER: (api, { id }, filters = {}) => ({
     key: ["ODV_PRO", "HEADER", id],
     func: () =>
       GET(api, {
-        table: "v_lista_testate_con_tot",
-        select:
-          "lista_testate_id,cliente_id,costo_tot_mio,tipo_decod, numero,del, venditore, sede,denom, luogo, telefoni,prz_tot_non_ivato, prz_tot_ivato, margine",
+        table: "v_odv_con_tot",
         profile: "vend",
-        lista_testate_id: `eq.${id}`,
+        odv_id: `eq.${id}`,
         ...filters,
       }),
   }),
 
   ODV_PRO_DETAILED_LIST: (api, { id }, filters = {}) => ({
     key: ["ODV_PRO", "DETAILED_LIST", id],
-    func: () => {
-      if (verbose) console.log("refetch", ["ODV_PRO", "DETAILED_LIST", id]);
-      return GET(api, {
-        table: "v_lista_righe",
+    func: () =>
+      GET(api, {
+        table: "v_odv_righe",
         profile: "vend",
-        lista_testate_id: `eq.${id}`,
+        odv_id: `eq.${id}`,
         ...filters,
-      });
+      }),
+    update: {
+      func: (data) =>
+        POST(api, { table: "odv_righe_upd", profile: "vend", data }),
+      revalidate: (data, queryClient) =>
+        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
+          old.map((e) => {
+            if (e.id === data?.id) return { ...e, ...data };
+            else return e;
+          })
+        ),
+    },
+    remove: {
+      func: (data) =>
+        POST(api, { table: "odv_righe_del", profile: "vend", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
+          old.filter((e) => e.id !== data.id)
+        );
+      },
+    },
+
+    //FIXME Bad request
+    //TODO Aggiungere popup con causale
+    cancel: {
+      func: (data) =>
+        POST(api, { table: "lista_righe_ann", profile: "vend", data }),
+      revalidate: (data, queryClient) =>
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]),
+    },
+    add: {
+      func: (data) =>
+        POST(api, {
+          table: "odv_righe_cre",
+          profile: "vend",
+          data,
+        }),
+      revalidate: (data, queryClient) => {
+        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) => [
+          data,
+          ...old,
+        ]);
+      },
     },
   }),
 
@@ -66,9 +110,9 @@ const endpoints = {
     key: ["ODV_PRO", "SUMMARY_LIST", id],
     func: () =>
       GET(api, {
-        table: "v_lista_righe_forma_riep",
+        table: "v_odv_righe_forma_riep",
         profile: "vend",
-        lista_testate_id: `eq.${id}`,
+        odv_id: `eq.${id}`,
         ...filters,
       }),
   }),
@@ -78,7 +122,7 @@ const endpoints = {
     func: () =>
       GET(api, {
         table: "domini",
-        select: "cod,note",
+        select: "cod,dex",
         profile: "core",
         ambito: "eq.lista",
         dominio: "eq.tipo",
@@ -91,7 +135,7 @@ const endpoints = {
     func: () =>
       GET(api, {
         table: "domini",
-        select: "cod,note",
+        select: "cod,dex",
         profile: "core",
         ambito: "eq.odv",
         dominio: "eq.stato",
@@ -104,14 +148,14 @@ const endpoints = {
     func: () =>
       GET(api, {
         table: "sedi",
-        select: "sede,dex",
+        select: "sede,dexb",
         profile: "core",
         ...filters,
       }),
   }),
 
   PRO_FOR_ODV: (api, { id }, filters = {}) => ({
-    key: ["PRO_FOR_ODV", { id }, filters],
+    key: ["PRO_FOR_ODV", id, filters],
     func: () =>
       GET(api, {
         table: "v_pro_per_odv",
@@ -121,11 +165,10 @@ const endpoints = {
   }),
 
   SELLERS: (api, props, filters) => ({
-    key: ["SITES"],
+    key: ["SELLERS"],
     func: () =>
       GET(api, {
-        table: "persone_con_odv",
-        select: "id,denom",
+        table: "v_persone_con_odv",
         profile: "core",
         ...filters,
       }),
@@ -140,7 +183,11 @@ const endpoints = {
         ...filters,
       }),
   }),
-
+  SHIPPING_GROUP: (api, { id }, filters = {}) => ({
+    key: ["SHIPPING_GROUP", id],
+    func: () =>
+      GET(api, { table: "v_odv_gru_cons", profile: "vend", id: `eq.${id}` }),
+  }),
   BILLING_GROUP: (api, { id }, filters = {}) => ({
     key: ["BILLING_GROUP", id],
     func: () =>
@@ -151,10 +198,29 @@ const endpoints = {
     key: ["BILLING_GROUP", id, "ACC"],
     func: () =>
       GET(api, {
-        table: "v_odv_acconti",
+        table: "odv_acconti",
         profile: "vend",
         gru_fatt_id: `eq.${id}`,
       }),
+    add: {
+      func: (data) =>
+        POST(api, {
+          table: "odv_acconti_cre",
+          profile: "vend",
+          data: { in_gru_fatt_id: id },
+        }),
+      revalidate: (data, queryClient) =>
+        queryClient.invalidateQueries(["BILLING_GROUP", id, "ACC"]),
+    },
+    update: {
+      func: (data) =>
+        POST(api, {
+          table: "odv_acconti_upd",
+          profile: "vend",
+          data,
+        }),
+      revalidate: (data, queryClient) => {},
+    },
   }),
 
   CLIENTS: (api, props, filters = {}) => ({
@@ -166,6 +232,114 @@ const endpoints = {
         tipo: "eq.C",
         ...filters,
       }),
+    add: {
+      func: (data) =>
+        POST(api, {
+          table: "soggetto_cre_upd",
+          profile: "base",
+          data: {
+            in_operaz: "C",
+            in_tipo: "C",
+            in_id: null,
+            in_tum: null,
+            in_persona: null,
+            ...data,
+          },
+        }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["CLIENTS"]);
+      },
+    },
+  }),
+  CLIENT_DETAIL: (api, { id }, filters = {}) => ({
+    key: ["CLIENT_DETAIL", id, filters],
+    func: () =>
+      GET(api, {
+        table: "soggetti",
+        profile: "base",
+        select:
+          "id,persona,ind_note,nome,cognome,denom,email,tipo,cfisc,piva,indirizzo,comune,provincia,cap,nazione,telefono,cellulare,pec",
+        id: `eq.${id}`,
+        ...filters,
+      }),
+    update: {
+      func: (data) =>
+        POST(api, {
+          table: "soggetto_cre_upd",
+          profile: "base",
+          data: {
+            in_operaz: "U",
+            in_tum: null,
+            ...data,
+          },
+        }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["CLIENT_DETAIL", id]);
+      },
+    },
+  }),
+  PROVIDERS: (api, props, filters = {}) => ({
+    key: ["PROVIDERS", filters],
+    func: () =>
+      GET(api, {
+        table: "v_soggetti",
+        profile: "base",
+        tipo: "eq.F",
+        ...filters,
+      }),
+    add: {
+      func: (data) =>
+        POST(api, {
+          table: "soggetto_cre_upd",
+          profile: "base",
+          data: {
+            in_operaz: "C",
+            in_tipo: "F",
+            in_id: null,
+            in_tum: null,
+            in_persona: null,
+            in_nome: "",
+            in_cognome: "",
+            ...data,
+          },
+        }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["PROVIDERS"]);
+      },
+    },
+  }),
+  PROVIDER_DETAIL: (api, { id }, filters = {}) => ({
+    key: ["PROVIDER_DETAIL", id, filters],
+    func: () =>
+      GET(api, {
+        table: "soggetti",
+        profile: "base",
+        select:
+          "id,persona,ind_note,nome,cognome,denom,email,tipo,cfisc,piva,indirizzo,comune,provincia,cap,nazione,telefono,cellulare,pec",
+        id: `eq.${id}`,
+        ...filters,
+      }),
+    update: {
+      func: (data) =>
+        POST(api, {
+          table: "soggetto_cre_upd",
+          profile: "base",
+          data: {
+            in_operaz: "U",
+            in_tum: null,
+            ...data,
+          },
+        }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["CLIENT_DETAIL", id]);
+      },
+    },
+  }),
+  CONFIG: (api, props, filters) => ({
+    key: ["CONFIG"],
+    func: () => {
+      return GET(api, { table: "rpc/config_attuale", profile: "dizi" });
+    },
   }),
 };
 

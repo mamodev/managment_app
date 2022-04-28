@@ -18,19 +18,19 @@ import {
 import { Box } from "@mui/system";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataList from "components/templates/ApiDataList";
-import { useCallback, useContext, useState } from "react";
+import { useMemo, useState } from "react";
 import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { odv_pro_id_details } from "./columns";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { endpoints, POST } from "api";
-import AuthContext from "context/AuthContext";
+import { endpoints } from "api";
+import { useAuthContext } from "context/AuthContext";
 import CreateProductDialog from "pages/odv_pro/[id]/details/CreateProductDialog";
-
-//TODO aggiungi solo in modifica
+import { useSnackbar } from "notistack";
 
 function AddProduct({ data }) {
   const [open, setOpen] = useState(false);
   const { id } = useParams();
+
   return (
     <Box>
       <Button startIcon={<Add />} onClick={() => setOpen(true)}>
@@ -49,41 +49,22 @@ function AddProduct({ data }) {
   );
 }
 function AddProject() {
-  const { api } = useContext(AuthContext);
-  const { cliente_id, lista_testate_id } = useOutletContext();
+  const { api } = useAuthContext();
+  const { id } = useParams();
+  const { cliente_id } = useOutletContext();
   const { key, func } = endpoints.PRO_FOR_ODV(api, cliente_id);
   const [open, setOpen] = useState(false);
   const { data, isSuccess } = useQuery(key, func);
-  const queryClient = useQueryClient();
-  const { mutate, isLoading } = useMutation(
-    (data) =>
-      POST(api, {
-        table: "lista_righe_cre",
-        profile: "vend",
-        data,
-      }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["ODV_PRO", "HEADER", lista_testate_id], {
-          exact: true,
-        });
-        queryClient.invalidateQueries(
-          ["ODV_PRO", "DETAILED_LIST", lista_testate_id],
-          {
-            exact: true,
-          }
-        );
-        queryClient.invalidateQueries(
-          ["ODV_PRO", "SUMMARY_LIST", lista_testate_id],
-          {
-            exact: true,
-          }
-        );
-        setOpen(false);
-      },
-    }
-  );
 
+  const { add } = endpoints.ODV_PRO_DETAILED_LIST(api, { id });
+  const queryClient = useQueryClient();
+  const { mutate, isLoading } = useMutation(add.func, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["PRO_FOR_ODV", cliente_id]);
+      add.revalidate(data, queryClient);
+      setOpen(false);
+    },
+  });
   return (
     <Box>
       {isSuccess && data?.length > 0 && (
@@ -109,16 +90,15 @@ function AddProject() {
                 key={i}
                 onClick={() =>
                   mutate({
-                    in_lista_id: 0,
-                    in_lista_testate_id: lista_testate_id,
-                    in_riga_prog_orig_id: e.id,
+                    in_lista_id: null,
+                    in_odv_id: id,
+                    in_prog_orig_id: e.id,
                     in_art_id: null,
                     in_marchio: null,
                     in_linea: null,
                     in_codice: null,
                     in_dex: null,
-                    in_costo_un_orig: 0,
-                    in_ricar_su_prog: 0,
+                    in_prezzo_un_lordo: 0,
                     in_sconto_vend: 0,
                     in_qta: 0,
                     in_cond_id: null,
@@ -129,7 +109,7 @@ function AddProject() {
                   <AccountTree />
                 </ListItemIcon>
                 <ListItemText
-                  primary={isLoading ? "Aggiungo...." : e.numero}
+                  primary={isLoading ? "Aggiungo..." : e.numero}
                   secondary={e.del}
                 />
               </ListItemButton>
@@ -145,57 +125,60 @@ function AddProject() {
 }
 
 export default function OdvProDetails() {
-  const data = useOutletContext();
-  console.log(data);
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const editing = searchParams.has("editing");
+
+  const editing = useMemo(() => searchParams.has("editing"), [searchParams]);
+  const { enqueueSnackbar } = useSnackbar();
 
   const queryClient = useQueryClient();
+  const { api } = useAuthContext();
 
-  const { api } = useContext(AuthContext);
+  const { update, remove, cancel } = endpoints.ODV_PRO_DETAILED_LIST(api, {
+    id,
+  });
 
-  const refetch = useCallback(() => {
-    queryClient.invalidateQueries(["ODV_PRO", "HEADER", id]);
-    queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]);
-    queryClient.invalidateQueries(["ODV_PRO", "SUMMARY_LIST", id]);
-  }, []);
+  const { mutate: mutateLine } = useMutation(update.func, {
+    onSuccess: (data) => {
+      enqueueSnackbar("Riga aggiornata", { variant: "success" });
+      update.revalidate(data, queryClient);
+    },
+  });
 
-  const { mutate: mutateLine } = useMutation(
-    (data) => POST(api, { table: "lista_righe_upd", profile: "vend", data }),
-    { onSuccess: refetch }
-  );
+  const { mutate: deleteLine } = useMutation(remove.func, {
+    onSuccess: (data) => {
+      enqueueSnackbar("Riga eliminata", { variant: "success" });
+      remove.revalidate(data, queryClient);
+    },
+  });
 
-  const { mutate: deleteLine } = useMutation(
-    (data) => POST(api, { table: "lista_righe_del", profile: "vend", data }),
-    {
-      onSuccess: refetch,
-    }
-  );
-  const { mutate: cancelLine } = useMutation(
-    (data) => POST(api, { table: "lista_righe_ann", profile: "vend", data }),
-    {
-      onSuccess: refetch,
-    }
-  );
+  const { mutate: cancelLine } = useMutation(cancel.func, {
+    onSuccess: (data) => {
+      enqueueSnackbar("Riga annullata", { variant: "success" });
+      cancel.revalidate(data, queryClient);
+    },
+  });
 
   const handleCellEditCommit = ({ field, value }, row) => {
     row[field] = value;
+
     mutateLine({
       in_id: row.id,
       in_linea: row.linea,
       in_codice: row.codice,
       in_dex: row.dex,
       in_dex2: row.dex2,
-      in_prezzo_un_lordo: row.costo_un_orig,
+      in_prezzo_un_lordo: row.prezzo_un_lordo,
       in_sconto_vend: row.sconto_vend ? row.sconto_vend : 0,
       in_qta: row.qta,
+      in_tum: row.tum,
     });
   };
 
   return (
     <ApiServer endpoint={endpoints.ODV_PRO_DETAILED_LIST} params={{ id }}>
       <ApiDataList
+        verbose={true}
         columns={odv_pro_id_details}
         containerProps={{ spacing: 4 }}
         isCellEditable={({ field, row }) => {
@@ -216,22 +199,22 @@ export default function OdvProDetails() {
           }
         }}
         onCellEditCommit={handleCellEditCommit}
-        toolbarActions={[AddProduct, AddProject]}
-        rowActions={
-          editing
-            ? [
-                {
-                  icon: <SettingsBackupRestore />,
-                  func: ({ id }) =>
-                    cancelLine({ in_id: id, in_caus_annullam: "default" }),
-                },
-                {
-                  icon: <Delete />,
-                  func: ({ id }) => deleteLine({ in_id: id }),
-                },
-              ]
-            : []
+        toolbarActions={editing ? [AddProduct, AddProject] : []}
+        getRowClassName={({ row }) =>
+          row.prog_orig_id ? "super-app-theme--project" : ""
         }
+        rowActions={[
+          {
+            icon: <SettingsBackupRestore />,
+            func: ({ id }) =>
+              cancelLine({ in_id: id, in_caus_annullam: "default" }),
+          },
+          {
+            icon: <Delete />,
+            func: ({ id }) => deleteLine({ in_id: id }),
+          },
+        ]}
+        columnVisibilityModel={{ actions: editing }}
       />
     </ApiServer>
   );

@@ -5,7 +5,25 @@ import {
   GridToolbarContainer,
 } from "@mui/x-data-grid";
 import DataGridContainer from "components/layout/DataGridCotainer";
+import { renderCellExpand } from "components/modules/GridCellExpand";
+import { useConfig } from "context/ConfigContext";
 import { useEffect, useState } from "react";
+import { isValid } from "utils";
+
+//TODO complete the validation
+function addValidation(columns, fields) {
+  let validatedColumns = columns.map((column) => ({
+    ...column,
+    renderCell: renderCellExpand,
+    preProcessEditCellProps: (params) => {
+      return {
+        ...params.props,
+        error: !isValid(column.field, params.props.value, fields),
+      };
+    },
+  }));
+  return validatedColumns;
+}
 
 function ToolBar({ rows, toolbarActions }) {
   return (
@@ -28,7 +46,6 @@ function CustomPagination() {
 }
 
 export default function ApiDataList({
-  verbose = false,
   columns: defaultColumns,
   data = [],
   filterOutlet,
@@ -39,48 +56,47 @@ export default function ApiDataList({
   rowActionsPosition = "start",
   ...props
 }) {
-  if (verbose) console.log(data);
-
-  const [columns, setColumns] = useState(defaultColumns);
+  const { fields } = useConfig();
+  const [columns, setColumns] = useState(addValidation(defaultColumns, fields));
   const rows = data.map((e, i) => ({ id: i, ...e }));
 
   useEffect(() => {
-    if (rowActions.length === 0) {
-      setColumns(defaultColumns);
-      return;
+    if (columns.length === defaultColumns.length && rowActions.length > 0) {
+      const actions = {
+        field: "actions",
+        type: "actions",
+        headerName: "Azioni",
+        width: 100,
+        getActions: (props) => {
+          return rowActions.map(({ icon, func }) => (
+            <GridActionsCellItem
+              icon={icon}
+              label="action"
+              onClick={() => func(props)}
+            />
+          ));
+        },
+      };
+      if (rowActionsPosition === "start")
+        setColumns((old) => [actions, ...old]);
+      else setColumns((old) => [...old, actions]);
     }
-    const actions = {
-      field: "actions",
-      type: "actions",
-      headerName: "Azioni",
-      width: 100,
-      getActions: (props) => {
-        return rowActions.map(({ icon, func }) => (
-          <GridActionsCellItem
-            icon={icon}
-            label="action"
-            onClick={() => func(props)}
-          />
-        ));
-      },
-    };
-    if (rowActionsPosition === "start") setColumns((old) => [actions, ...old]);
-    else setColumns((old) => [...old, actions]);
-  }, [rowActions, rowActionsPosition]);
+  }, []);
 
-  const cellEditCommitHandler = (params) =>
+  //TODO update only if it really changes
+  const cellEditCommitHandler = (params) => {
     onCellEditCommit?.(
       params,
       data[rows.indexOf(rows.find((r) => r.id === params.id))]
     );
-
+  };
   return (
     <Stack spacing={2} {...containerProps}>
       {filterOutlet}
       <DataGridContainer>
         <StyledDataGrid
           autoHeight
-          rowHeight={40}
+          rowHeight={30}
           columns={columns}
           rows={rows}
           pageSize={rows.length}

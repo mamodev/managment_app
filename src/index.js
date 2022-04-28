@@ -4,37 +4,38 @@ import theme from "components/theme";
 import AuthContextProvider from "context/AuthContextProvider";
 import React from "react";
 import ReactDOM from "react-dom";
-import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter } from "react-router-dom";
 import Router from "routes";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import itLocale from "date-fns/locale/it";
 
 import "style/index.css";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { WindowManagerContextProvider } from "context/WindowManagerContext";
+import ReactQueryProvider from "context/QueryClientProvider";
+import { SnackbarProvider } from "notistack";
+import { ConfigContextProvider } from "context/ConfigContext";
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <AuthContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <LocalizationProvider
-              dateAdapter={AdapterDateFns}
-              locale={itLocale}
-            >
-              <Router />
-            </LocalizationProvider>
-          </QueryClientProvider>
-        </AuthContextProvider>
-      </ThemeProvider>
+      <AuthContextProvider>
+        <ThemeProvider theme={theme}>
+          <SnackbarProvider maxSnack={5}>
+            <ReactQueryProvider>
+              <ConfigContextProvider>
+                <WindowManagerContextProvider>
+                  <LocalizationProvider
+                    dateAdapter={AdapterDateFns}
+                    locale={itLocale}
+                  >
+                    <Router />
+                  </LocalizationProvider>
+                </WindowManagerContextProvider>
+              </ConfigContextProvider>
+            </ReactQueryProvider>
+          </SnackbarProvider>
+        </ThemeProvider>
+      </AuthContextProvider>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")

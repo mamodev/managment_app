@@ -1,4 +1,4 @@
-import { grey } from "@mui/material/colors";
+import { blue, grey, purple } from "@mui/material/colors";
 
 const { styled, Box } = require("@mui/material");
 
@@ -13,9 +13,31 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
     color: theme.palette.primary.main,
     textDecoration: "underline",
   },
-  "& .MuiDataGrid-cell": {
+
+  "& input[aria-invalid='true']": {
+    color: theme.palette.error.main,
+  },
+  "& .super-app-theme--project .MuiDataGrid-cell": {
+    backgroundColor: purple[100],
+  },
+  "& .super-app-theme--select .MuiDataGrid-cell": {
+    backgroundColor: "transparent",
+  },
+
+  "& .super-app-theme--select": {
+    backgroundColor: "white",
+    "&:hover": {
+      backgroundColor: blue[100],
+    },
+
+    transition: ".2s ease-in-out",
+    cursor: "pointer",
+  },
+
+  "& .MuiDataGrid-cell ": {
     backgroundColor: grey[100],
   },
+
   "& .MuiDataGrid-cell--editable": {
     backgroundColor: "white",
   },

@@ -2,6 +2,7 @@ import { Button, Stack, Typography } from "@mui/material";
 import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataHeader from "components/templates/ApiDataHeader";
+import { useWindowManagerContext } from "context/WindowManagerContext";
 import {
   Outlet,
   useMatch,
@@ -16,11 +17,7 @@ export default function OdvProIdLayout() {
   const { id } = useParams();
   return (
     <Stack alignItems="center" p={2}>
-      <Stack
-        mt={4}
-        spacing={4}
-        width={{ xs: "100%", md: "90%", lg: "80%", xl: "70%" }}
-      >
+      <Stack mt={4} spacing={4} width="100%">
         <ApiServer endpoint={endpoints.ODV_PRO_HEADER} params={{ id }}>
           <Title />
           <ApiDataHeader columns={odv_pro_id_header_columns} />
@@ -34,7 +31,7 @@ export default function OdvProIdLayout() {
 function Title({ data }) {
   data = data?.length > 0 && data?.reduce((object, next) => object);
   const navigate = useNavigate();
-
+  const { openInNewTab } = useWindowManagerContext();
   const state_resolved = useResolvedPath("/odv_pro/:id/state");
   const details_resolved = useResolvedPath("/odv_pro/:id/details");
   const match_state = useMatch({ path: state_resolved.pathname, end: true });
@@ -56,7 +53,9 @@ function Title({ data }) {
           {data?.tipo_decod === "Ordine" && (
             <Button
               variant="outlined"
-              onClick={() => navigate("state/?minimal=true")}
+              onClick={() =>
+                navigate(`state/${openInNewTab ? "?minimal=true" : ""}`)
+              }
             >
               Situazione
             </Button>
@@ -66,7 +65,9 @@ function Title({ data }) {
             <Button
               color="error"
               variant="contained"
-              onClick={() => navigate("details/?minimal=true")}
+              onClick={() =>
+                navigate(`details/${openInNewTab ? "?minimal=true" : ""}`)
+              }
             >
               Esci da modifica
             </Button>
@@ -74,7 +75,11 @@ function Title({ data }) {
             <Button
               color="warning"
               variant="contained"
-              onClick={() => navigate("details/?editing=true&minimal=true")}
+              onClick={() =>
+                navigate(
+                  `details/?editing=true&${openInNewTab ? "minimal=true" : ""}`
+                )
+              }
             >
               Modifica
             </Button>

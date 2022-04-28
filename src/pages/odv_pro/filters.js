@@ -5,7 +5,6 @@ import DateFilter from "components/modules/filters/DateFilter";
 import TextFilter from "components/modules/filters/TextFilter";
 import { formatDate } from "utils";
 
-//TODO filtro denom non funziona problema di end point
 const odv_pro_filters = [
   {
     name: "tipo_decod",
@@ -30,7 +29,7 @@ const odv_pro_filters = [
     componentProps: {
       endpoint: endpoints.ODV_PRO_STATE,
       children: AutocompleteFilter,
-      mapData: (data) => ({ label: data.note, cod: data.cod }),
+      mapData: (data) => ({ label: data.dex, cod: data.cod }),
       dataName: "options",
       placeholder: "Stato",
       isOptionEqualToValue: (option, value) => option.label === value.label,
@@ -46,7 +45,7 @@ const odv_pro_filters = [
     componentProps: {
       endpoint: endpoints.SITES,
       children: AutocompleteFilter,
-      mapData: (data) => ({ label: data.dex, sede: data.sede }),
+      mapData: (data) => ({ label: data.dexb, sede: data.sede }),
       dataName: "options",
       placeholder: "Sede",
       isOptionEqualToValue: (option, value) => option.label === value.label,
@@ -82,12 +81,12 @@ const odv_pro_filters = [
     },
   },
   {
-    name: "denom",
+    name: "estremi",
     component: TextFilter,
     defaultValue: "",
-    filterRender: (val) => `like.*${val.toUpperCase()}*`,
+    filterRender: (val) => `like.*${val.toLowerCase()}*`,
     componentProps: {
-      placeholder: "Denominazione",
+      placeholder: "Estremi",
       sx: { minWidth: 300 },
       size: "small",
     },

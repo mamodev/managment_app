@@ -115,11 +115,6 @@ export default function GruppoFatturazione() {
             },
           ]}
         />
-        <Stack>
-          <IconButton>
-            <Add />
-          </IconButton>
-        </Stack>
       </ApiServer>
     </Box>
   );

@@ -1,6 +1,6 @@
 const odv_pro_id_details = [
   {
-    field: "seq",
+    field: "s1",
     headerName: "Seq",
     align: "center",
     sortable: false,

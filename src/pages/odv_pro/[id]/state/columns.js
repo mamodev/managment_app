@@ -59,6 +59,7 @@ const odv_pro_state_summary = [
     sortable: false,
     align: "center",
     width: 90,
+    cellClassName: "super-app-theme--link",
   },
   {
     field: "stato_consegna",

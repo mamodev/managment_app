@@ -12,12 +12,11 @@ const {
   InputAdornment,
   DialogActions,
 } = require("@mui/material");
-const { POST } = require("api");
-const { default: AuthContext } = require("context/AuthContext");
-const { useState, useContext } = require("react");
+const { endpoints } = require("api");
+const { useAuthContext } = require("context/AuthContext");
+const { useState } = require("react");
 const { useMutation, useQueryClient } = require("react-query");
 
-//TODO Flag for editing?
 const DEFAULT_STATE = {
   desc: "",
   qta: "1",
@@ -30,7 +29,6 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
   const [open, setOpen] = useState(false);
   const [product, setProduct] = useState();
   const [fields, setFields] = useState(DEFAULT_STATE);
-  const { api } = useContext(AuthContext);
 
   const closeHandler = (p) => {
     setOpen(false);
@@ -43,34 +41,21 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
 
   const queryClient = useQueryClient();
 
-  const { mutate, isLoading } = useMutation(
-    (data) =>
-      POST(api, {
-        table: "lista_righe_cre",
-        profile: "vend",
-        data,
-      }),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["ODV_PRO", "HEADER", id], {
-          exact: true,
-        });
-        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id], {
-          exact: true,
-        });
-        queryClient.invalidateQueries(["ODV_PRO", "SUMMARY_LIST", id], {
-          exact: true,
-        });
-        resetHandler();
-        dialogProps.onClose();
-      },
-    }
-  );
-  const createHandler = () => {
+  const { api } = useAuthContext();
+  const { add } = endpoints.ODV_PRO_DETAILED_LIST(api, { id });
+  const { mutate, isLoading } = useMutation(add.func, {
+    onSuccess: (data) => {
+      add.revalidate(data, queryClient);
+      resetHandler();
+      dialogProps.onClose();
+    },
+  });
+
+  const createHandler = () =>
     mutate({
-      in_lista_id: 0,
-      in_lista_testate_id: id,
-      in_riga_prog_orig_id: 0,
+      in_lista_id: null,
+      in_odv_id: id,
+      in_prog_orig_id: null,
       in_art_id: product.art_id,
       in_marchio: product.marchio,
       in_linea: product.linea,
@@ -81,7 +66,6 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
       in_qta: parseFloat(fields.qta),
       in_cond_id: product.cond_id,
     });
-  };
 
   const isSendable =
     product &&
@@ -96,7 +80,6 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
     product.cod_iva !== "" &&
     fields.prezzo_un !== "";
 
-  console.log(product);
   return (
     <Dialog
       {...dialogProps}

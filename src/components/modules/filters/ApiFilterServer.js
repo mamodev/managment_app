@@ -17,5 +17,7 @@ export default function ApiFilterServer({
   const { isSuccess, data } = useQuery(key, func);
   const dataEncoded = {};
   dataEncoded[dataName] = data?.map(mapData);
+
+  if (!dataEncoded[dataName]) dataEncoded[dataName] = [];
   return <>{isSuccess && <Children {...props} {...dataEncoded} />}</>;
 }

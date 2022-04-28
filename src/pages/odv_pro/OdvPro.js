@@ -12,17 +12,19 @@ import {
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
-import { endpoints, POST } from "api";
+import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ClientSelector from "components/modules/ClientSelector";
 import ApiDataList from "components/templates/ApiDataList";
 import { useAuthContext } from "context/AuthContext";
+import { useWindowManagerContext } from "context/WindowManagerContext";
 import useFilters from "hooks/useFilters";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import odv_pro_columns from "./columns";
 import odv_pro_filters from "./filters";
 
+//FIXME Error into filter with sellers
 const AddOrder = (setOpen) => {
   return function Component() {
     return (
@@ -36,20 +38,16 @@ const AddOrder = (setOpen) => {
 };
 export default function OdvPro() {
   const { FilterOutlet, query } = useFilters(odv_pro_filters);
-
-  const cellClickHandler = ({
-    field,
-    row: { lista_testate_id, tipo_decod },
-  }) => {
+  const { newWindow } = useWindowManagerContext();
+  const cellClickHandler = ({ field, row: { odv_id, tipo_decod, numero } }) => {
     if (field === "numero") {
-      let params = `scrollbars=no,status=no,location=no,toolbar=no,menubar=no,width=850,height=500`;
-      window.open(
-        `${window.origin}/odv_pro/${lista_testate_id}/${
+      newWindow({
+        url: `/odv_pro/${odv_id}/${
           tipo_decod === "Ordine" ? "state" : "details"
-        }/?&minimal=true`,
-        `order_status-${lista_testate_id}`,
-        params
-      );
+        }`,
+        name: "Ordine",
+        params: numero,
+      });
     }
   };
 
@@ -95,21 +93,27 @@ export default function OdvPro() {
 
 function CreateOrderDialog({ open, defaultClient, onClose: close }) {
   const { api, sede, vendId } = useAuthContext();
+  const { newWindow } = useWindowManagerContext();
 
   const [client, setClient] = useState(null);
   const [type, setType] = useState(null);
 
   const queryClient = useQueryClient();
-  const { mutate: create, isLoading } = useMutation(
-    (data) =>
-      POST(api, { table: "lista_testate_cre", profile: "vend", data: data }),
-    {
-      onSuccess: () => {
-        close();
-        queryClient.invalidateQueries(["ODV_PRO"]);
-      },
-    }
-  );
+  const { add } = endpoints.ODV_PRO_LIST(api);
+
+  const { mutate: create, isLoading } = useMutation(add.func, {
+    onSuccess: (data) => {
+      newWindow({
+        url: `/odv_pro/${data.id}/${
+          type.label === "Ordine" ? "state" : "details"
+        }`,
+        name: "Ordine",
+        params: data.numero,
+      });
+      close();
+      add.revalidate(data, queryClient);
+    },
+  });
 
   useEffect(() => {
     if (open) {

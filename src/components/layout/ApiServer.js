@@ -2,10 +2,15 @@ import AuthContext from "context/AuthContext";
 import React, { useContext, useEffect, useState } from "react";
 import { useQuery } from "react-query";
 
-export default function ApiServer({ endpoint, children, filters, params }) {
+export default function ApiServer({
+  endpoint,
+  children,
+  filters: { queryCount, ...filters } = {},
+  params,
+}) {
   const { api } = useContext(AuthContext);
   const { key, func } = endpoint(api, params, filters);
-  const { data, isFetching } = useQuery(key, func);
+  const { data, isFetching, refetch } = useQuery(key, func);
 
   const [dataState, setDataState] = useState(null);
 
@@ -13,7 +18,9 @@ export default function ApiServer({ endpoint, children, filters, params }) {
     if (!isFetching) {
       setDataState(data);
     }
-  }, [isFetching]);
+  }, [data, isFetching]);
+
+  useEffect(() => refetch(), [queryCount]);
 
   return (
     <>
