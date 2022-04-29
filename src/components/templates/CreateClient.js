@@ -1,21 +1,12 @@
 import { Add } from "@mui/icons-material";
-import { Button, Stack, TextField, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import { endpoints } from "api";
 import FormTextField from "components/base/FormTextField";
-import ApiServer from "components/layout/ApiServer";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
-import TextFilter from "components/modules/filters/TextFilter";
-import ApiDataForm from "components/templates/ApiDataForm";
-import ApiDataList from "components/templates/ApiDataList";
-import CreateClient from "components/templates/CreateClient";
 import { useAuthContext } from "context/AuthContext";
-import { useWindowManagerContext } from "context/WindowManagerContext";
-import useFilters from "hooks/useFilters";
 import { useState } from "react";
-import clienti_columns from "./columns";
+import ApiDataForm from "./ApiDataForm";
 
-//TODO ORGANIZE IN MULTIPLE FILES
-//FIXME sistemare creazione cliente non persona fisica
 const fields = [
   {
     xs: 12,
@@ -153,71 +144,37 @@ const fields = [
   },
 ];
 
-export default function Clienti() {
+export default function CreateClient({
+  callback,
+  size = "normal",
+  variant = "text",
+  text = "Aggiungi",
+  startIcon = <Add />,
+  dataForm,
+}) {
+  const [open, setOpen] = useState();
   const { api } = useAuthContext();
-  const [addPersonOpen, setAddPersonOpen] = useState(false);
-  const { newWindow } = useWindowManagerContext();
-  const { FilterOutlet, query } = useFilters([
-    {
-      name: "estremi",
-      component: TextFilter,
-      defaultValue: "",
-      filterRender: (val) => `like.*${val.toLowerCase()}*`,
-      componentProps: {
-        placeholder: "Estremi",
-        sx: { minWidth: 300 },
-        size: "small",
-      },
-    },
-    {
-      name: "comune_search",
-      component: TextFilter,
-      defaultValue: "",
-      filterRender: (val) => `like.*${val.toLowerCase()}*`,
-      componentProps: {
-        placeholder: "Comune",
-        sx: { minWidth: 300 },
-        size: "small",
-      },
-    },
-  ]);
-  return (
-    <Stack p={3} spacing={2}>
-      <Typography variant="h4" sx={{ textTransform: "uppercase" }}>
-        Lista clienti
-      </Typography>
 
-      <ApiServer endpoint={endpoints.CLIENTS} filters={query}>
-        <ApiDataList
-          columns={clienti_columns}
-          filterOutlet={FilterOutlet}
-          onRowClick={(e) => {
-            newWindow({
-              url: `/clienti/${e.id}`,
-              name: "Cliente",
-              params: e.row.denom,
-              w: 420,
-              h: 490,
-            });
-          }}
-          getRowClassName={() => `super-app-theme--select`}
-          toolbarActions={[
-            () => (
-              <CreateClient
-                callback={({ id }) =>
-                  newWindow({
-                    url: `/clienti/${id}`,
-                    name: "Clienti",
-                    params: id,
-                    w: 420,
-                    h: 490,
-                  })
-                }
-              />
-            ),
-          ]}
-        />
-      </ApiServer>
-    </Stack>
+  return (
+    <>
+      <Button size={size} variant={variant} startIcon={startIcon} onClick={() => setOpen(true)}>
+        {text}
+      </Button>
+      <ApiDataForm
+        endpoint={endpoints.CLIENTS(api).add}
+        callback={callback}
+        send={(mutate, fields) => {
+          if (!fields.in_nome) fields.in_nome = "";
+          if (!fields.in_cognome) fields.in_cognome = "";
+          mutate(fields);
+        }}
+        title="Aggiungi cliente"
+        sendText="Aggiungi"
+        open={open}
+        onClose={() => setOpen(false)}
+        fields={fields}
+        {...dataForm}
+      />
+    </>
   );
 }

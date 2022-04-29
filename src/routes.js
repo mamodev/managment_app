@@ -1,5 +1,6 @@
 import PageLayout from "components/layout/PageLayout";
 import PageLoader from "components/layout/PageLoader";
+import ClientSelector from "components/modules/ClientSelector";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 
@@ -70,6 +71,7 @@ export default function Router() {
               </PageLoader>
             }
           />
+
           <Route
             path=":id"
             element={
