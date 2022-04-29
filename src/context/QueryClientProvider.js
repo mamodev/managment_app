@@ -11,9 +11,20 @@ export default function ReactQueryProvider({ children }) {
   const handleError = useCallback(
     (error) => {
       const status = error.response.status;
+      console.log(error.response);
       switch (status) {
+        case 400:
+          enqueueSnackbar(error.response.data.message, {
+            variant: "error",
+          });
+          break;
         case 404:
           enqueueSnackbar("Impossibile eseguire questa funzione", {
+            variant: "error",
+          });
+          break;
+        case 409:
+          enqueueSnackbar(JSON.parse(error.response.data.msg).message, {
             variant: "error",
           });
           break;
@@ -60,7 +71,5 @@ export default function ReactQueryProvider({ children }) {
     []
   );
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

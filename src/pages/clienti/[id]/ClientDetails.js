@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 import client_detail_header from "./header";
 
 //TODO add TUM (From backend)
-//FIXME non funziona nulla nei clienti
+//TODO add conditional rendering
 export default function ClientDetails() {
   const { id } = useParams();
   const { api } = useAuthContext();

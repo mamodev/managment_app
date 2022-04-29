@@ -1,42 +1,119 @@
 import PageLayout from "components/layout/PageLayout";
-import Clienti from "pages/clienti/Clienti";
-import ClientDetails from "pages/clienti/[id]/ClientDetails";
-import Providers from "pages/fornitori/Providers";
-import GruppoConsegna from "pages/gruppo_consegna/GruppoConsegna";
-import GruppoFatturazione from "pages/gruppo_fatturazione/GruppoFatturazione";
-import Home from "pages/home/Home";
-import OdvPro from "pages/odv_pro/OdvPro";
-import OdvProDetails from "pages/odv_pro/[id]/details/OdvProDetails";
-import OdvProIdLayout from "pages/odv_pro/[id]/OdvProIdLayout";
-import OdvProState from "pages/odv_pro/[id]/state/OdvProState";
+import PageLoader from "components/layout/PageLoader";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
+
+const Clienti = React.lazy(() => import("pages/clienti/Clienti"));
+const ClientDetails = React.lazy(() => import("pages/clienti/[id]/ClientDetails"));
+const Providers = React.lazy(() => import("pages/fornitori/Providers"));
+const GruppoConsegna = React.lazy(() => import("pages/gruppo_consegna/GruppoConsegna"));
+const GruppoFatturazione = React.lazy(() => import("pages/gruppo_fatturazione/GruppoFatturazione"));
+const Home = React.lazy(() => import("pages/home/Home"));
+const OdvPro = React.lazy(() => import("pages/odv_pro/OdvPro"));
+const OdvProDetails = React.lazy(() => import("pages/odv_pro/[id]/details/OdvProDetails"));
+const OdvProIdLayout = React.lazy(() => import("pages/odv_pro/[id]/OdvProIdLayout"));
+const OdvProState = React.lazy(() => import("pages/odv_pro/[id]/state/OdvProState"));
 
 export default function Router() {
   return (
     <Routes>
       <Route path="/" element={<PageLayout />}>
-        <Route index element={<Home />} />
+        <Route
+          index
+          element={
+            <PageLoader>
+              <Home />
+            </PageLoader>
+          }
+        />
         <Route path="odv_pro/*">
-          <Route index element={<OdvPro />} />
-          <Route path=":id/*" element={<OdvProIdLayout />}>
-            <Route path="state" element={<OdvProState />} />
-            <Route path="details" element={<OdvProDetails />} />
+          <Route
+            index
+            element={
+              <PageLoader>
+                <OdvPro />
+              </PageLoader>
+            }
+          />
+          <Route
+            path=":id/*"
+            element={
+              <PageLoader>
+                <OdvProIdLayout />
+              </PageLoader>
+            }
+          >
+            <Route
+              path="state"
+              element={
+                <PageLoader>
+                  <OdvProState />
+                </PageLoader>
+              }
+            />
+            <Route
+              path="details"
+              element={
+                <PageLoader>
+                  <OdvProDetails />
+                </PageLoader>
+              }
+            />
           </Route>
         </Route>
         <Route path="clienti/*">
-          <Route index element={<Clienti />} />
-          <Route path=":id" element={<ClientDetails />} />
+          <Route
+            index
+            element={
+              <PageLoader>
+                <Clienti />
+              </PageLoader>
+            }
+          />
+          <Route
+            path=":id"
+            element={
+              <PageLoader>
+                <ClientDetails />
+              </PageLoader>
+            }
+          />
         </Route>
         <Route path="fornitori/*">
-          <Route index element={<Providers />} />
-          <Route path=":id" element={<ClientDetails />} />
+          <Route
+            index
+            element={
+              <PageLoader>
+                <Providers />
+              </PageLoader>
+            }
+          />
+          <Route
+            path=":id"
+            element={
+              <PageLoader>
+                <ClientDetails />
+              </PageLoader>
+            }
+          />
         </Route>
 
         <Route
           path="gruppo_fatturazione/:id"
-          element={<GruppoFatturazione />}
+          element={
+            <PageLoader>
+              <GruppoFatturazione />
+            </PageLoader>
+          }
         />
-        <Route path="gruppo_consegna/:id" element={<GruppoConsegna />} />
+        <Route
+          path="gruppo_consegna/:id"
+          element={
+            <PageLoader>
+              <GruppoConsegna />
+            </PageLoader>
+          }
+        />
       </Route>
     </Routes>
   );

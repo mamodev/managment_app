@@ -1,9 +1,9 @@
 import { Add } from "@mui/icons-material";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Stack, TextField, Typography } from "@mui/material";
 import { endpoints } from "api";
 import FormTextField from "components/base/FormTextField";
-import LabelSwitch from "components/base/LabelSwitch";
 import ApiServer from "components/layout/ApiServer";
+import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import TextFilter from "components/modules/filters/TextFilter";
 import ApiDataForm from "components/templates/ApiDataForm";
 import ApiDataList from "components/templates/ApiDataList";
@@ -17,15 +17,27 @@ import clienti_columns from "./columns";
 //FIXME sistemare creazione cliente non persona fisica
 const fields = [
   {
-    id: "type_switch",
-    include: false,
-    Component: LabelSwitch,
-    defaultValue: true,
-    componentProps: { label: "Persona fisica" },
+    xs: 12,
+    id: "in_persona",
+    Component: AutocompleteFilter,
+    defaultValue: null,
+    componentProps: {
+      options: [
+        { value: "FISI", label: "Persona fisica senza partita iva" },
+        { value: "PIVA", label: "Persona fisica con partita iva" },
+        { value: "GIUR", label: "Persona giuridica" },
+      ],
+      inputProps: {
+        variant: "standard",
+      },
+      placeholder: "Tipo",
+    },
+    valueGet: (val) => val?.value,
+    required: true,
   },
   {
     xs: 6,
-    conditionallyRendered: { id: "type_switch", value: true },
+    conditionallyRendered: { id: "in_persona", value: ["FISI", "PIVA"] },
     id: "in_nome",
     defaultValue: "",
     Component: FormTextField,
@@ -34,7 +46,7 @@ const fields = [
   },
   {
     xs: 6,
-    conditionallyRendered: { id: "type_switch", value: true },
+    conditionallyRendered: { id: "in_persona", value: ["FISI", "PIVA"] },
     id: "in_cognome",
     defaultValue: "",
     Component: FormTextField,
@@ -42,7 +54,7 @@ const fields = [
     required: true,
   },
   {
-    conditionallyRendered: { id: "type_switch", value: false },
+    conditionallyRendered: { id: "in_persona", value: "GIUR" },
     id: "in_denom",
     defaultValue: "",
     Component: FormTextField,
@@ -54,7 +66,7 @@ const fields = [
     defaultValue: "",
     Component: FormTextField,
     componentProps: { fullWidth: true, placeholder: "Email" },
-    required: true,
+    required: false,
   },
   {
     id: "in_pec",
@@ -68,10 +80,11 @@ const fields = [
     defaultValue: "",
     Component: FormTextField,
     componentProps: { fullWidth: true, placeholder: "Codice fiscale" },
-    required: true,
+    required: false,
   },
   {
     id: "in_piva",
+    conditionallyRendered: { id: "in_persona", value: ["PIVA", "GIUR"] },
     defaultValue: "",
     Component: FormTextField,
     componentProps: { fullWidth: true, placeholder: "Partita iva" },
@@ -189,10 +202,7 @@ export default function Clienti() {
           getRowClassName={() => `super-app-theme--select`}
           toolbarActions={[
             () => (
-              <Button
-                onClick={() => setAddPersonOpen(true)}
-                startIcon={<Add />}
-              >
+              <Button onClick={() => setAddPersonOpen(true)} startIcon={<Add />}>
                 Aggiungi
               </Button>
             ),
@@ -217,6 +227,7 @@ export default function Clienti() {
           mutate(fields);
         }}
         title="Aggiungi cliente"
+        sendText="Crea"
         open={addPersonOpen}
         onClose={() => setAddPersonOpen(false)}
         fields={fields}

@@ -7,17 +7,26 @@ export default function AutocompleteFilter({
   placeholder,
   inputProps,
   options = [],
+  error = false,
+  required = false,
+  helperText,
   ...props
 }) {
   return (
     <Autocomplete
-      {...props}
       value={value}
       onChange={(e, newValue) => setValue(newValue)}
       options={options}
       renderInput={(params) => (
-        <TextField {...inputProps} {...params} label={placeholder} />
+        <TextField
+          {...inputProps}
+          {...params}
+          error={(required && value === null) || error}
+          helperText={helperText}
+          label={placeholder}
+        />
       )}
+      {...props}
     />
   );
 }

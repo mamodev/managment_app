@@ -4,6 +4,7 @@ export default function FormTextField({
   value,
   onChange: change,
   required = false,
+  error = false,
   ...props
 }) {
   return (
@@ -11,7 +12,7 @@ export default function FormTextField({
       {...props}
       value={value}
       variant="standard"
-      error={required && value === ""}
+      error={(required && value === "") || error}
       onChange={(e) => change(e.target.value)}
     />
   );

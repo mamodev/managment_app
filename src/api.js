@@ -33,11 +33,9 @@ const endpoints = {
         ...filters,
       }),
     add: {
-      func: (data) =>
-        POST(api, { table: "odv_cre", profile: "vend", data: data }),
+      func: (data) => POST(api, { table: "odv_cre", profile: "vend", data: data }),
 
-      revalidate: (data, queryClient) =>
-        queryClient.invalidateQueries(["ODV_PRO"]),
+      revalidate: (data, queryClient) => queryClient.invalidateQueries(["ODV_PRO"]),
     },
   }),
 
@@ -62,8 +60,7 @@ const endpoints = {
         ...filters,
       }),
     update: {
-      func: (data) =>
-        POST(api, { table: "odv_righe_upd", profile: "vend", data }),
+      func: (data) => POST(api, { table: "odv_righe_upd", profile: "vend", data }),
       revalidate: (data, queryClient) =>
         queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
           old.map((e) => {
@@ -73,22 +70,17 @@ const endpoints = {
         ),
     },
     remove: {
-      func: (data) =>
-        POST(api, { table: "odv_righe_del", profile: "vend", data }),
+      func: (data) => POST(api, { table: "odv_righe_del", profile: "vend", data }),
       revalidate: (data, queryClient) => {
-        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
-          old.filter((e) => e.id !== data.id)
-        );
+        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) => old.filter((e) => e.id !== data.id));
       },
     },
 
     //FIXME Bad request
     //TODO Aggiungere popup con causale
     cancel: {
-      func: (data) =>
-        POST(api, { table: "lista_righe_ann", profile: "vend", data }),
-      revalidate: (data, queryClient) =>
-        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]),
+      func: (data) => POST(api, { table: "lista_righe_ann", profile: "vend", data }),
+      revalidate: (data, queryClient) => queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]),
     },
     add: {
       func: (data) =>
@@ -98,10 +90,7 @@ const endpoints = {
           data,
         }),
       revalidate: (data, queryClient) => {
-        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) => [
-          data,
-          ...old,
-        ]);
+        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) => [data, ...old]);
       },
     },
   }),
@@ -185,13 +174,11 @@ const endpoints = {
   }),
   SHIPPING_GROUP: (api, { id }, filters = {}) => ({
     key: ["SHIPPING_GROUP", id],
-    func: () =>
-      GET(api, { table: "v_odv_gru_cons", profile: "vend", id: `eq.${id}` }),
+    func: () => GET(api, { table: "v_odv_gru_cons", profile: "vend", id: `eq.${id}` }),
   }),
   BILLING_GROUP: (api, { id }, filters = {}) => ({
     key: ["BILLING_GROUP", id],
-    func: () =>
-      GET(api, { table: "v_odv_gru_fatt", profile: "vend", id: `eq.${id}` }),
+    func: () => GET(api, { table: "v_odv_gru_fatt", profile: "vend", id: `eq.${id}` }),
   }),
 
   BILLING_GROUP_ACC: (api, { id }, filters = {}) => ({
@@ -209,8 +196,7 @@ const endpoints = {
           profile: "vend",
           data: { in_gru_fatt_id: id },
         }),
-      revalidate: (data, queryClient) =>
-        queryClient.invalidateQueries(["BILLING_GROUP", id, "ACC"]),
+      revalidate: (data, queryClient) => queryClient.invalidateQueries(["BILLING_GROUP", id, "ACC"]),
     },
     update: {
       func: (data) =>
@@ -242,7 +228,6 @@ const endpoints = {
             in_tipo: "C",
             in_id: null,
             in_tum: null,
-            in_persona: null,
             ...data,
           },
         }),

@@ -1,14 +1,9 @@
 import { LoadingButton } from "@mui/lab";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from "@mui/material";
+import { useConfig } from "context/ConfigContext";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { isValid } from "utils";
 
 export default function ApiDataForm({
   open,
@@ -30,6 +25,11 @@ export default function ApiDataForm({
     },
   });
 
+  const { fields: validationFields } = useConfig();
+  const isValidField = (id, val) => {
+    const decodedID = id.includes("in_") ? id.split("in_")[1] : id;
+    return !isValid(decodedID, val, validationFields);
+  };
   const [values, setValues] = useState(fields.map((e) => e.defaultValue));
 
   const isSendable = () => {
@@ -46,7 +46,7 @@ export default function ApiDataForm({
         return values[fieldIndex] === value;
       })
       .forEach((e, i) => {
-        if (!e.include && e.required && values[e.id] === e.defaultValue) {
+        if (!e.include && e.required && values[e.i] === e.defaultValue) {
           sendable = false;
         }
       });
@@ -67,17 +67,32 @@ export default function ApiDataForm({
 
               const { id, value } = e.conditionallyRendered;
 
-              const fieldIndex = fields.indexOf(
-                fields.find((e) => e.id === id)
-              );
+              const fieldIndex = fields.indexOf(fields.find((e) => e.id === id));
 
-              return values[fieldIndex] === value;
+              if (fieldIndex === -1) return true;
+              else if (fields[fieldIndex].valueGet) {
+                if (Array.isArray(value)) {
+                  for (const v of value) {
+                    if (fields[fieldIndex].valueGet(values[fieldIndex]) === v) return true;
+                  }
+                  return false;
+                }
+                return fields[fieldIndex].valueGet(values[fieldIndex]) === value;
+              } else return values[fieldIndex] === value;
             })
             .map((e, i) => {
               return (
                 <Grid item key={i} xs={e.xs ? e.xs : 12}>
                   <e.Component
+                    error={!e.valueGet && isValidField(e.id, values[e.i])}
                     required={!!e.required}
+                    helperText={
+                      e.required && values[e.i] === e.defaultValue
+                        ? "Questo campo è obbligatorio"
+                        : !e.valueGet && isValidField(e.id, values[e.i])
+                        ? "Formato invalido"
+                        : null
+                    }
                     onChange={(val) =>
                       setValues((old) => {
                         const newState = [...old];
@@ -104,7 +119,7 @@ export default function ApiDataForm({
               .map((e, i) => ({
                 id: e.id,
                 include: e.include,
-                value: values[i] === "" ? null : values[i],
+                value: e.valueGet ? e.valueGet(values[i]) : values[i] === "" ? null : values[i],
               }))
               .filter((e) => e.include === undefined);
 
