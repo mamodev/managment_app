@@ -1,6 +1,5 @@
-import { Stack, Typography } from "@mui/material";
+import { TableCell, TableRow, Typography } from "@mui/material";
 import { grey } from "@mui/material/colors";
-import { Box } from "@mui/system";
 import BlankTextField from "components/base/BlankTextField";
 
 export default function NameValueInput({
@@ -11,50 +10,50 @@ export default function NameValueInput({
   onChange: setValue,
   editable = false,
   error = false,
+  nameWidth = 150,
 }) {
   return (
-    <Stack
-      direction="row"
-      justifyContent="right"
-      alignItems="center"
-      spacing={1}
-    >
-      <Box
+    <TableRow>
+      <TableCell
         sx={{
-          width: 150,
+          p: 0,
+          pr: 1,
+          whiteSpace: "nowrap",
+          border: 0,
           textAlign: "right",
           borderRight: 2,
-          pr: 1.5,
           borderColor: grey[500],
         }}
       >
         <Typography>
           <strong>{name}</strong>
         </Typography>
-      </Box>
+      </TableCell>
 
-      {InputComponent ? (
-        <InputComponent
-          error={error}
-          variant="standard"
-          sx={{ width: 200 }}
-          size="small"
-          onChange={(val) => setValue(val)}
-          value={value}
-          disabled={!editable}
-        />
-      ) : (
-        <BlankTextField
-          multiline={multiline}
-          error={error}
-          sx={{ width: 200 }}
-          onChange={(e) => setValue(e.target.value)}
-          disabled={!editable}
-          value={value}
-          variant="standard"
-          autoComplete="false"
-        />
-      )}
-    </Stack>
+      <TableCell sx={{ p: 0, pl: 1, border: 0 }}>
+        {InputComponent ? (
+          <InputComponent
+            error={error}
+            variant="standard"
+            sx={{ width: 200 }}
+            size="small"
+            onChange={(val) => setValue(val)}
+            value={value}
+            disabled={!editable}
+          />
+        ) : (
+          <BlankTextField
+            multiline={multiline}
+            error={error}
+            sx={{ width: 200 }}
+            onChange={(e) => setValue(e.target.value)}
+            disabled={!editable}
+            value={value}
+            variant="standard"
+            autoComplete="false"
+          />
+        )}
+      </TableCell>
+    </TableRow>
   );
 }

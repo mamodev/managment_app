@@ -3,14 +3,7 @@ import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataHeader from "components/templates/ApiDataHeader";
 import { useWindowManagerContext } from "context/WindowManagerContext";
-import {
-  Outlet,
-  useMatch,
-  useNavigate,
-  useParams,
-  useResolvedPath,
-  useSearchParams,
-} from "react-router-dom";
+import { Outlet, useMatch, useNavigate, useParams, useResolvedPath, useSearchParams } from "react-router-dom";
 import { odv_pro_id_header_columns } from "./header";
 
 export default function OdvProIdLayout() {
@@ -20,7 +13,7 @@ export default function OdvProIdLayout() {
       <Stack mt={4} spacing={4} width="100%">
         <ApiServer endpoint={endpoints.ODV_PRO_HEADER} params={{ id }}>
           <Title />
-          <ApiDataHeader columns={odv_pro_id_header_columns} />
+          <ApiDataHeader columns={odv_pro_id_header_columns} fullWidth />
           <OutletWithProps />
         </ApiServer>
       </Stack>
@@ -51,12 +44,7 @@ function Title({ data }) {
       {match_details && (
         <>
           {data?.tipo_decod === "Ordine" && (
-            <Button
-              variant="outlined"
-              onClick={() =>
-                navigate(`state/${openInNewTab ? "?minimal=true" : ""}`)
-              }
-            >
+            <Button variant="outlined" onClick={() => navigate(`state/${openInNewTab ? "?minimal=true" : ""}`)}>
               Situazione
             </Button>
           )}
@@ -65,9 +53,7 @@ function Title({ data }) {
             <Button
               color="error"
               variant="contained"
-              onClick={() =>
-                navigate(`details/${openInNewTab ? "?minimal=true" : ""}`)
-              }
+              onClick={() => navigate(`details/${openInNewTab ? "?minimal=true" : ""}`)}
             >
               Esci da modifica
             </Button>
@@ -75,11 +61,7 @@ function Title({ data }) {
             <Button
               color="warning"
               variant="contained"
-              onClick={() =>
-                navigate(
-                  `details/?editing=true&${openInNewTab ? "minimal=true" : ""}`
-                )
-              }
+              onClick={() => navigate(`details/?editing=true&${openInNewTab ? "minimal=true" : ""}`)}
             >
               Modifica
             </Button>
@@ -87,10 +69,7 @@ function Title({ data }) {
         </>
       )}
       {match_state && (
-        <Button
-          variant="outlined"
-          onClick={() => navigate("details/?minimal=true")}
-        >
+        <Button variant="outlined" onClick={() => navigate("details/?minimal=true")}>
           Dettagli
         </Button>
       )}

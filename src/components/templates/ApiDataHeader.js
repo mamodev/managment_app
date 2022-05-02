@@ -1,6 +1,7 @@
 import { LoadingButton } from "@mui/lab";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Table, TableBody, TableContainer } from "@mui/material";
 import { grey } from "@mui/material/colors";
+import { Box } from "@mui/system";
 import NameValueInput from "components/modules/NameValueInput";
 import { useConfig } from "context/ConfigContext";
 import { useEffect, useState } from "react";
@@ -38,8 +39,7 @@ export default function ApiDataHeader({
   });
 
   useEffect(() => {
-    if (defaultData?.length > 0)
-      setData(defaultData?.reduce((object, next) => object));
+    if (defaultData?.length > 0) setData(defaultData?.reduce((object, next) => object));
   }, [defaultData]);
 
   const changeData = (data) => {
@@ -49,8 +49,7 @@ export default function ApiDataHeader({
 
   const cancelHandler = () => {
     setEdited(false);
-    if (defaultData?.length > 0)
-      setData(defaultData?.reduce((object, next) => object));
+    if (defaultData?.length > 0) setData(defaultData?.reduce((object, next) => object));
   };
 
   const sendable = () => {
@@ -83,11 +82,7 @@ export default function ApiDataHeader({
       }}
     >
       {edited && (
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{ position: "absolute", bottom: -35, right: 10 }}
-        >
+        <Stack direction="row" spacing={1} sx={{ position: "absolute", bottom: -35, right: 10 }}>
           <LoadingButton
             loading={isLoading}
             disabled={sendable()}
@@ -97,46 +92,41 @@ export default function ApiDataHeader({
           >
             Salva
           </LoadingButton>
-          <Button
-            size="small"
-            variant="contained"
-            color="error"
-            onClick={cancelHandler}
-          >
+          <Button size="small" variant="contained" color="error" onClick={cancelHandler}>
             Annulla
           </Button>
         </Stack>
       )}
       {data &&
         columns.map((e, i) => (
-          <Stack key={i}>
-            {e?.map((e, i) => (
-              <NameValueInput
-                multiline={e.multiline}
-                inputComponent={e.component}
-                name={e.nameid ? data[e.nameid] : e.name}
-                onChange={(val) =>
-                  changeData((old) => {
-                    const newData = { ...old };
-                    newData[e.id] = e.valueSet
-                      ? e.valueSet(val)
-                      : valueSet(val);
-                    return newData;
-                  })
-                }
-                value={
-                  e.valueGet ? e.valueGet(data[e.id]) : valueGet(data[e.id])
-                }
-                editable={e.editable}
-                error={
-                  e.valueGet
-                    ? !isValid(e.id, e.valueGet(data[e.id]), fields)
-                    : !isValid(e.id, valueGet(data[e.id]), fields)
-                }
-                key={i}
-              />
-            ))}
-          </Stack>
+          <TableContainer component={Box} sx={{ overflow: "hidden" }}>
+            <Table>
+              <TableBody>
+                {e?.map((e, i) => (
+                  <NameValueInput
+                    multiline={e.multiline}
+                    inputComponent={e.component}
+                    name={e.nameid ? data[e.nameid] : e.name}
+                    onChange={(val) =>
+                      changeData((old) => {
+                        const newData = { ...old };
+                        newData[e.id] = e.valueSet ? e.valueSet(val) : valueSet(val);
+                        return newData;
+                      })
+                    }
+                    value={e.valueGet ? e.valueGet(data[e.id]) : valueGet(data[e.id])}
+                    editable={e.editable}
+                    error={
+                      e.valueGet
+                        ? !isValid(e.id, e.valueGet(data[e.id]), fields)
+                        : !isValid(e.id, valueGet(data[e.id]), fields)
+                    }
+                    key={i}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         ))}
     </Stack>
   );

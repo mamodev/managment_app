@@ -1,4 +1,4 @@
-import { Add, Search } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 import {
   Button,
   Dialog,
@@ -46,7 +46,7 @@ export default function ClientSelector({ value, onChange: setValue }) {
     if (data) setList(data);
   }, [data]);
 
-  useEffect(() => open && refetch(), [open]);
+  useEffect(() => open && refetch(), [open, refetch]);
 
   return (
     <Box>
