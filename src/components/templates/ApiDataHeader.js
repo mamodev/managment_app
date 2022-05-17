@@ -6,7 +6,9 @@ import NameValueInput from "components/modules/NameValueInput";
 import { useConfig } from "context/ConfigContext";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { isValid } from "utils";
+import { isValid } from "config/utils";
+
+//TODO sistemare larghezze input delle colonne
 
 export default function ApiDataHeader({
   columns = [],
@@ -115,7 +117,11 @@ export default function ApiDataHeader({
                       })
                     }
                     value={e.valueGet ? e.valueGet(data[e.id]) : valueGet(data[e.id])}
-                    editable={e.editable}
+                    editable={
+                      e.endpoint_editable
+                        ? e.editable && defaultData[0][e.endpoint_editable]
+                        : e.editable
+                    }
                     error={
                       e.valueGet
                         ? !isValid(e.id, e.valueGet(data[e.id]), fields)

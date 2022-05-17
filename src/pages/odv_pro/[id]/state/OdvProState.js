@@ -5,6 +5,7 @@ import { useWindowManagerContext } from "context/WindowManagerContext";
 import { useParams } from "react-router-dom";
 import { odv_pro_state_summary } from "./columns";
 
+//TODO aggiungere funzione per modificare gruppo fatt./cons.
 export default function OdvProState() {
   const { id } = useParams();
 

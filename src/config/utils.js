@@ -1,5 +1,6 @@
-const formatDate = (date) =>
-  `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+const formatDate = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+
+const reverseDate = (date, separator = "-") => date.split("-").reverse().join(separator);
 
 const validate = (field, value, fields) => {
   const rules = fields[field];
@@ -10,8 +11,7 @@ const validate = (field, value, fields) => {
           console.log(field, value, "is not a string");
           return false;
         }
-        if (rules.format && value !== "" && !value.match(rules.format))
-          return false;
+        if (rules.format && value !== "" && !value.match(rules.format)) return false;
         if (rules.max_length && value.length > rules.max_length) return false;
         else return true;
       case "number":
@@ -28,4 +28,4 @@ const isValid = (field, value, fields) => {
   return res;
 };
 
-export { formatDate, isValid };
+export { formatDate, reverseDate, isValid };

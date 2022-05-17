@@ -3,7 +3,7 @@ import ApiFilterServer from "components/modules/filters/ApiFilterServer";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import DateFilter from "components/modules/filters/DateFilter";
 import TextFilter from "components/modules/filters/TextFilter";
-import { formatDate } from "utils";
+import { formatDate } from "config/utils";
 
 const odv_pro_filters = [
   {

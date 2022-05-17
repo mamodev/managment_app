@@ -1,6 +1,6 @@
 import { LocalizationProvider } from "@mui/lab";
 import { ThemeProvider } from "@mui/material";
-import theme from "components/theme";
+import theme from "config/theme";
 import AuthContextProvider from "context/AuthContextProvider";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -24,10 +24,7 @@ ReactDOM.render(
             <ReactQueryProvider>
               <ConfigContextProvider>
                 <WindowManagerContextProvider>
-                  <LocalizationProvider
-                    dateAdapter={AdapterDateFns}
-                    locale={itLocale}
-                  >
+                  <LocalizationProvider dateAdapter={AdapterDateFns} locale={itLocale}>
                     <Router />
                   </LocalizationProvider>
                 </WindowManagerContextProvider>

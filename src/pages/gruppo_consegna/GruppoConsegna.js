@@ -1,11 +1,11 @@
-import { Add } from "@mui/icons-material";
-import { Stack, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataHeader from "components/templates/ApiDataHeader";
 import { useParams } from "react-router-dom";
 
+//TODO Aggiungere funzionamento per modifica. (Capire meglio con gabriele)
 export default function GruppoConsegna() {
   const { id } = useParams();
 
@@ -18,7 +18,18 @@ export default function GruppoConsegna() {
           columns={[
             [
               { name: "Gruppo", id: "nr" },
-              { name: "Data Prevista", id: "data_prevista" },
+              {
+                name: "Data Prevista",
+                id: "data_prevista",
+                editable: "true",
+                endpoint_editable: "modif_data_prevista",
+              },
+              {
+                name: "Indirizzo",
+                id: "consegna_a_dex",
+                editable: "true",
+                endpoint_editable: "modif_consegna_a_id",
+              },
             ],
           ]}
         />

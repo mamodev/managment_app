@@ -1,5 +1,5 @@
-//TODO add limit to querys
-//TODO optimize select param of GET querys
+//OPTIMIZE add limit to querys
+//OPTIMIZE select param of GET querys
 async function GET(api, { table, profile, ...args }) {
   let query = table + (!!Object.keys(args).length ? "?" : "");
   for (let arg in args) {
@@ -37,6 +37,12 @@ const endpoints = {
 
       revalidate: (data, queryClient) => queryClient.invalidateQueries(["ODV_PRO"]),
     },
+    toOrder: {
+      func: (data) => POST(api, { table: "odv_assnum", profile: "vend", data: data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["ODV_PRO"]);
+      },
+    },
   }),
 
   ODV_PRO_HEADER: (api, { id }, filters = {}) => ({
@@ -72,15 +78,18 @@ const endpoints = {
     remove: {
       func: (data) => POST(api, { table: "odv_righe_del", profile: "vend", data }),
       revalidate: (data, queryClient) => {
-        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) => old.filter((e) => e.id !== data.id));
+        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
+          old.filter((e) => e.id !== data.id)
+        );
       },
     },
 
     //FIXME Bad request
     //TODO Aggiungere popup con causale
     cancel: {
-      func: (data) => POST(api, { table: "lista_righe_ann", profile: "vend", data }),
-      revalidate: (data, queryClient) => queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]),
+      func: (data) => POST(api, { table: "odv_righe_ann", profile: "vend", data }),
+      revalidate: (data, queryClient) =>
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]),
     },
     add: {
       func: (data) =>
@@ -196,7 +205,8 @@ const endpoints = {
           profile: "vend",
           data: { in_gru_fatt_id: id },
         }),
-      revalidate: (data, queryClient) => queryClient.invalidateQueries(["BILLING_GROUP", id, "ACC"]),
+      revalidate: (data, queryClient) =>
+        queryClient.invalidateQueries(["BILLING_GROUP", id, "ACC"]),
     },
     update: {
       func: (data) =>
@@ -320,10 +330,43 @@ const endpoints = {
       },
     },
   }),
+
   CONFIG: (api, props, filters) => ({
     key: ["CONFIG"],
     func: () => {
       return GET(api, { table: "rpc/config_attuale", profile: "dizi" });
+    },
+  }),
+
+  ODA_FROM_ODV: (api, { id }, filters) => ({
+    key: ["ODA_FROM_ODV", { id }],
+    func: () => {
+      return GET(api, { table: "v_oda_da_odv", profile: "maga", odv_id: `eq.${id}` });
+    },
+    update: {
+      func: ({ in_odv_riga_id, in_acquistare_qta }) =>
+        POST(api, {
+          table: "oda_da_odv_qta",
+          profile: "maga",
+          data: { in_odv_riga_id, in_acquistare_qta },
+        }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["ODA_FROM_ODV", { id }]);
+        queryClient.invalidateQueries(["ODA_FROM_ODV_CONFIRM", { id }]);
+      },
+    },
+  }),
+
+  ODA_FROM_ODV_CONFIRM: (api, { id }, filters) => ({
+    key: ["ODA_FROM_ODV_CONFIRM", { id }],
+    func: () => {
+      return GET(api, { table: "v_oda_da_odv_conf", profile: "maga", odv_id: `eq.${id}` });
+    },
+    confirm: {
+      func: (data) => POST(api, { table: "oda_da_odv_f", profile: "maga", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["ODA_FROM_ODV", { id }]);
+      },
     },
   }),
 };

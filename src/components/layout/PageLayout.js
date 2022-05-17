@@ -10,11 +10,11 @@ import {
   Box,
   Checkbox,
   IconButton,
-  ListItemIcon,
   Menu,
   MenuItem,
   Stack,
   Toolbar,
+  Tooltip,
 } from "@mui/material";
 import WindowTabs from "components/modules/WindowTabs";
 import MenuDrawer from "components/templates/MenuDrawer";
@@ -70,7 +70,6 @@ export default function PageLayout() {
   } = useWindowManagerContext();
 
   const { reloadConfig } = useConfig();
-
   return (
     <Box>
       {minimal ? (
@@ -94,20 +93,23 @@ export default function PageLayout() {
                   onClick={() => focusAll()}
                   disabled={openedWindows === 0}
                 >
-                  <WindowRounded />
+                  <Tooltip title="Mostra tutte le finestre" arrow>
+                    <WindowRounded />
+                  </Tooltip>
                 </IconButton>
                 <IconButton
                   color="inherit"
                   onClick={() => closeAll()}
                   disabled={openedWindows === 0}
                 >
-                  <CancelPresentation />
+                  <Tooltip title="Chiudi tutte le finestre" arrow>
+                    <CancelPresentation />
+                  </Tooltip>
                 </IconButton>
-                <IconButton
-                  color="inherit"
-                  onClick={(e) => setAnchorEl(e.currentTarget)}
-                >
-                  <Settings />
+                <IconButton color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <Tooltip title="Impostazioni" arrow>
+                    <Settings />
+                  </Tooltip>
                 </IconButton>
                 <Menu
                   anchorEl={anchorEl}
@@ -154,11 +156,7 @@ export default function PageLayout() {
                     divider
                   >
                     Apri in una nuova finestra
-                    <Checkbox
-                      checked={openInNewTab}
-                      size="small"
-                      sx={{ ml: 1, p: 0.5 }}
-                    />
+                    <Checkbox checked={openInNewTab} size="small" sx={{ ml: 1, p: 0.5 }} />
                   </MenuItem>
                   <MenuItem
                     disabled={!openInNewTab}
@@ -168,17 +166,9 @@ export default function PageLayout() {
                     divider
                   >
                     Apri sempre una nuova finestra
-                    <Checkbox
-                      checked={openAlwaysNewTab}
-                      size="small"
-                      sx={{ ml: 1, p: 0.5 }}
-                    />
+                    <Checkbox checked={openAlwaysNewTab} size="small" sx={{ ml: 1, p: 0.5 }} />
                   </MenuItem>
-                  <MenuItem
-                    onClick={reloadConfig}
-                    sx={{ justifyContent: "space-between" }}
-                    dense
-                  >
+                  <MenuItem onClick={reloadConfig} sx={{ justifyContent: "space-between" }} dense>
                     Ricarica configurazione
                     <Refresh sx={{ fontSize: 20, pr: 0.5 }} />
                   </MenuItem>
@@ -186,11 +176,7 @@ export default function PageLayout() {
               </Stack>
             </Toolbar>
           </AppBar>
-          <MenuDrawer
-            open={menuOpen}
-            handleClose={handleMenuClose}
-            width={drawerWidth}
-          />
+          <MenuDrawer open={menuOpen} handleClose={handleMenuClose} width={drawerWidth} />
           <PageContainer open={menuOpen} drawerwidth={drawerWidth} mt={8}>
             <Outlet />
           </PageContainer>

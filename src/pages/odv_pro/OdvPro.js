@@ -1,4 +1,4 @@
-import { Add } from "@mui/icons-material";
+import { Add, ShoppingBag } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
   Autocomplete,
@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
@@ -19,12 +20,12 @@ import ApiDataList from "components/templates/ApiDataList";
 import { useAuthContext } from "context/AuthContext";
 import { useWindowManagerContext } from "context/WindowManagerContext";
 import useFilters from "hooks/useFilters";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import odv_pro_columns from "./columns";
 import odv_pro_filters from "./filters";
 
-//FIXME Error into filter with sellers
+//TODO fix action ODA only for orders (Conditional rendering on actions)
 const AddOrder = (setOpen) => {
   return function Component() {
     return (
@@ -39,21 +40,61 @@ const AddOrder = (setOpen) => {
 export default function OdvPro() {
   const { FilterOutlet, query } = useFilters(odv_pro_filters);
   const { newWindow } = useWindowManagerContext();
-  const cellClickHandler = ({ field, row: { odv_id, tipo_decod, numero } }) => {
-    if (field === "numero") {
-      newWindow({
-        url: `/odv_pro/${odv_id}/${
-          tipo_decod === "Ordine" ? "state" : "details"
-        }`,
-        name: "Ordine",
-        params: numero,
-      });
-    }
-  };
+
+  const cellClickHandler = useCallback(
+    ({ field, row: { odv_id, tipo_decod, numero } }) => {
+      if (field === "numero") {
+        newWindow({
+          url: `/odv_pro/${odv_id}/${tipo_decod === "Ordine" ? "state" : "details"}`,
+          name: "Ordine",
+          params: numero,
+          w: 1000,
+        });
+      }
+    },
+    [newWindow]
+  );
 
   const [open, setOpen] = useState(false);
   const [defaultClient, setDefaultClient] = useState(null);
 
+  const actions = useMemo(
+    () => [
+      {
+        icon: ({ row: { denom } }) => {
+          return (
+            <Tooltip arrow title={`Nuovo ordine per ${denom}`}>
+              <Add />
+            </Tooltip>
+          );
+        },
+        func: ({ row: { cliente_id, denom } }) => {
+          setDefaultClient({ id: cliente_id, denom });
+          setOpen(true);
+        },
+      },
+      {
+        icon: () => (
+          <Tooltip arrow title="Ordine di acquisto">
+            <ShoppingBag />
+          </Tooltip>
+        ),
+        func: ({ row: { odv_id } }) => {
+          newWindow({
+            url: `/emissione_oda/${odv_id}`,
+            params: odv_id,
+            name: "ODA per ODV",
+            w: 1200,
+            h: 600,
+          });
+        },
+      },
+    ],
+    [newWindow]
+  );
+
+  const toolbarActions = useMemo(() => [AddOrder(setOpen)], []);
+  console.log("Over");
   return (
     <Box sx={{ marginBottom: 3 }}>
       <Stack p={4} spacing={2}>
@@ -64,16 +105,8 @@ export default function OdvPro() {
             filterOutlet={FilterOutlet}
             containerProps={{ spacing: 4 }}
             onCellClick={cellClickHandler}
-            toolbarActions={[AddOrder(setOpen)]}
-            rowActions={[
-              {
-                icon: <Add />,
-                func: ({ row: { cliente_id, denom } }) => {
-                  setDefaultClient({ id: cliente_id, denom });
-                  setOpen(true);
-                },
-              },
-            ]}
+            toolbarActions={toolbarActions}
+            rowActions={actions}
             rowActionsPosition="end"
           />
         </ApiServer>
@@ -104,9 +137,7 @@ function CreateOrderDialog({ open, defaultClient, onClose: close }) {
   const { mutate: create, isLoading } = useMutation(add.func, {
     onSuccess: (data) => {
       newWindow({
-        url: `/odv_pro/${data.id}/${
-          type.label === "Ordine" ? "state" : "details"
-        }`,
+        url: `/odv_pro/${data.id}/details`,
         name: "Ordine",
         params: data.numero,
       });
@@ -134,16 +165,12 @@ function CreateOrderDialog({ open, defaultClient, onClose: close }) {
           <Autocomplete
             value={type}
             onChange={(e, v) => setType(v)}
-            isOptionEqualToValue={(option, value) =>
-              option.label === value.label
-            }
+            isOptionEqualToValue={(option, value) => option.label === value.label}
             options={[
               { id: "V", label: "Ordine" },
               { id: "P", label: "Progetto" },
             ]}
-            renderInput={(props) => (
-              <TextField {...props} size="small" label="Tipo" />
-            )}
+            renderInput={(props) => <TextField {...props} size="small" label="Tipo" />}
           />
           <ClientSelector value={client} onChange={(val) => setClient(val)} />
         </Stack>

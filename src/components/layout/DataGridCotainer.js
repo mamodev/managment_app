@@ -36,6 +36,11 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
 
   "& .MuiDataGrid-cell ": {
     backgroundColor: grey[100],
+    overflow: "visible",
+  },
+
+  "& .MuiDataGrid-cell.MuiDataGrid-cell--editing": {
+    overflow: "visible",
   },
 
   "& .MuiDataGrid-cell--editable": {

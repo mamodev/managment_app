@@ -1,6 +1,8 @@
 import PageLayout from "components/layout/PageLayout";
 import PageLoader from "components/layout/PageLoader";
 import ClientSelector from "components/modules/ClientSelector";
+import ConfermaEmissioneODA from "pages/emissioneODA/conferma/ConfermaEmissioneODA";
+import EmissioneODA from "pages/emissioneODA/EmissioneODA";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 
@@ -113,6 +115,22 @@ export default function Router() {
           element={
             <PageLoader>
               <GruppoConsegna />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="emissione_oda/:id"
+          element={
+            <PageLoader>
+              <EmissioneODA />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="emissione_oda/:id/conferma"
+          element={
+            <PageLoader>
+              <ConfermaEmissioneODA />
             </PageLoader>
           }
         />

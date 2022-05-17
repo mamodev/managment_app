@@ -12,6 +12,7 @@ import useFilters from "hooks/useFilters";
 import { useState } from "react";
 import providers_columns from "./columns";
 
+//TODO Rendere come clienti
 const fields = [
   {
     id: "in_denom",
@@ -158,10 +159,7 @@ export default function Providers() {
           getRowClassName={() => `super-app-theme--select`}
           toolbarActions={[
             () => (
-              <Button
-                onClick={() => setAddProviderOpen(true)}
-                startIcon={<Add />}
-              >
+              <Button onClick={() => setAddProviderOpen(true)} startIcon={<Add />}>
                 Aggiungi
               </Button>
             ),
@@ -170,9 +168,7 @@ export default function Providers() {
       </ApiServer>
       <ApiDataForm
         endpoint={endpoints.PROVIDERS(api).add}
-        callback={({ id }) =>
-          newWindow({ url: `/fornitori/${id}`, name: "Fornitori", params: id })
-        }
+        callback={({ id }) => newWindow({ url: `/fornitori/${id}`, name: "Fornitori", params: id })}
         send={(mutate, fields) => mutate(fields)}
         title="Aggiungi fornitore"
         open={addProviderOpen}

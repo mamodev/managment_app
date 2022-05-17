@@ -3,7 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from 
 import { useConfig } from "context/ConfigContext";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { isValid } from "utils";
+import { isValid } from "config/utils";
 
 export default function ApiDataForm({
   open,

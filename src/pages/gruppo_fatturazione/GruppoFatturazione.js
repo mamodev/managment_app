@@ -1,13 +1,12 @@
-import { Add } from "@mui/icons-material";
-import { IconButton, Stack, Typography } from "@mui/material";
-import { Box } from "@mui/system";
-import { endpoints } from "api";
+import { Typography, Box} from "@mui/material";import { endpoints } from "api";
 import BooleanInput from "components/base/BooleanInput";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataHeader from "components/templates/ApiDataHeader";
 import ApiDataList from "components/templates/ApiDataList";
 import { useParams } from "react-router-dom";
 
+//TODO Finire sistema acconti
+//TODO Header CUD
 export default function GruppoFatturazione() {
   const { id } = useParams();
 
@@ -61,9 +60,7 @@ export default function GruppoFatturazione() {
                 id: "verificato_il",
                 valueFormatter: (val) => {
                   const date = new Date(val);
-                  return `${date.getDate()}/${
-                    date.getMonth() + 1
-                  }/${date.getFullYear()}`;
+                  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
                 },
               },
             ],

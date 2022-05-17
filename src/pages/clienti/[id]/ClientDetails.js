@@ -7,8 +7,8 @@ import { useAuthContext } from "context/AuthContext";
 import { useParams } from "react-router-dom";
 import client_detail_header from "./header";
 
-//TODO add TUM (From backend)
 //TODO add conditional rendering
+//TODO note indirizzo multiline
 export default function ClientDetails() {
   const { id } = useParams();
   const { api } = useAuthContext();

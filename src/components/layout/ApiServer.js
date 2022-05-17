@@ -21,7 +21,6 @@ export default function ApiServer({
   }, [data, isFetching]);
 
   useEffect(() => refetch(), [queryCount]);
-
   return (
     <>
       {dataState &&

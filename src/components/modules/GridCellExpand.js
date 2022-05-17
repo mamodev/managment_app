@@ -1,19 +1,18 @@
-import { Box, Paper, Popper, styled, Typography } from "@mui/material";
-import { blue } from "@mui/material/colors";
-import { useEffect, useRef, useState } from "react";
+import { InputUnstyled } from "@mui/base";
+import { Box, Paper, Popper, styled, Typography, TextareaAutosize } from "@mui/material";
+import { useGridApiContext } from "@mui/x-data-grid";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 function isOverflown(element) {
-  return (
-    element.scrollHeight > element.clientHeight ||
-    element.scrollWidth > element.clientWidth
-  );
+  return element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth;
 }
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: blue[100],
-  borderRadius: 10,
+  backgroundColor: "white",
+  border: `1px solid ${theme.palette.primary.main}`,
   maxWidth: 300,
-  "&:before": {
+  //Arrow
+  /*"&:before": {
     content: '""',
     width: 12,
     height: 12,
@@ -22,7 +21,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     transform: "rotate(45deg)",
     top: -5,
     left: 7,
-  },
+  },*/
 }));
 export default function GridCellExpand({ width, value }) {
   const wrapper = useRef(null);
@@ -112,12 +111,121 @@ export default function GridCellExpand({ width, value }) {
 }
 
 function renderCellExpand(params) {
+  const val = params.formattedValue ? params.formattedValue : params.value;
+  return <GridCellExpand value={val || ""} width={params.colDef.computedWidth} />;
+}
+
+function GridCellExpandEdit({ value, id, field, colDef: { computedWidth }, ...props }) {
+  const [width, setWidth] = useState(computedWidth);
+
+  const apiRef = useGridApiContext();
+  const textPreviewRef = useRef();
+
+  const handleChange = useCallback(
+    (event) => {
+      apiRef.current.setEditCellValue({ id, field, value: event.target.value });
+    },
+    [apiRef, field, id]
+  );
+
+  const getWidth = useCallback(() => {
+    let max = computedWidth;
+    if (textPreviewRef.current)
+      max = Math.max(max, textPreviewRef.current.getBoundingClientRect().width + 1);
+
+    if (max > 500) max = 500;
+    return `${max}px`;
+  }, [computedWidth]);
+
+  useEffect(() => setWidth(getWidth), [value, getWidth]);
+
   return (
-    <GridCellExpand
-      value={params.value || ""}
-      width={params.colDef.computedWidth}
-    />
+    <div style={{ position: "relative", height: "100%", width: "100%" }}>
+      <Box
+        sx={{
+          position: "absolute",
+          bgcolor: "white",
+          border: 1,
+          borderColor: "primary.main",
+          zIndex: 2000000,
+          left: -1,
+          top: -1,
+        }}
+      >
+        <Box sx={{ position: "relative", width: width, overflow: "hidden" }}>
+          <Box
+            ref={textPreviewRef}
+            sx={{
+              maxWidth: 500,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: -1,
+              opacity: 0,
+            }}
+          >
+            {value}
+          </Box>
+          <CustomInput
+            componentsProps={{ input: { style: { width: width } } }}
+            multiline
+            value={value}
+            onChange={handleChange}
+          />
+        </Box>
+      </Box>
+    </div>
   );
 }
 
-export { renderCellExpand };
+function renderGridCellExpandEdit(params) {
+  return <GridCellExpandEdit {...params} />;
+}
+
+const StyledInputElement = styled("input")(
+  ({ theme }) => `
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 2px;
+  color: black;
+  border: 0;
+
+  &:focus {
+    outline: none
+  }
+`
+);
+
+const StyledTextareaElement = styled(TextareaAutosize)(
+  ({ theme }) => `
+  font-family: ${theme.typography.fontFamily};
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 2px;
+  color: black;
+  border: 0;
+  resize: none;
+
+  &:focus-visible{
+    outline: none
+  }
+
+  &:focus{
+    outline: none
+  }
+`
+);
+
+const CustomInput = React.forwardRef(function CustomInput(props, ref) {
+  return (
+    <InputUnstyled
+      components={{ Input: StyledInputElement, Textarea: StyledTextareaElement }}
+      {...props}
+      ref={ref}
+    />
+  );
+});
+
+export { renderCellExpand, renderGridCellExpandEdit };

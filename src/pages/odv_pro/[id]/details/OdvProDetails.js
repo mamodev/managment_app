@@ -1,6 +1,7 @@
 import {
   AccountTree,
   Add,
+  CloseOutlined,
   Delete,
   Link,
   SettingsBackupRestore,
@@ -26,6 +27,7 @@ import { endpoints } from "api";
 import { useAuthContext } from "context/AuthContext";
 import CreateProductDialog from "pages/odv_pro/[id]/details/CreateProductDialog";
 import { useSnackbar } from "notistack";
+import ApiDataListFormAction from "components/modules/ApiDataListFormAction";
 
 function AddProduct({ data }) {
   const [open, setOpen] = useState(false);
@@ -108,10 +110,7 @@ function AddProject() {
                 <ListItemIcon>
                   <AccountTree />
                 </ListItemIcon>
-                <ListItemText
-                  primary={isLoading ? "Aggiungo..." : e.numero}
-                  secondary={e.del}
-                />
+                <ListItemText primary={isLoading ? "Aggiungo..." : e.numero} secondary={e.del} />
               </ListItemButton>
             ))}
           </List>
@@ -200,17 +199,20 @@ export default function OdvProDetails() {
         }}
         onCellEditCommit={handleCellEditCommit}
         toolbarActions={editing ? [AddProduct, AddProject] : []}
-        getRowClassName={({ row }) =>
-          row.prog_orig_id ? "super-app-theme--project" : ""
-        }
+        getRowClassName={({ row }) => (row.prog_orig_id ? "super-app-theme--project" : "")}
         rowActions={[
           {
-            icon: <SettingsBackupRestore />,
-            func: ({ id }) =>
-              cancelLine({ in_id: id, in_caus_annullam: "default" }),
+            icon: (porps) => (
+              <ApiDataListFormAction
+                tooltip="Annulla riga"
+                endpoint={cancel}
+                Icon={CloseOutlined}
+                title="Annulla riga"
+              />
+            ),
           },
           {
-            icon: <Delete />,
+            icon: () => <Delete />,
             func: ({ id }) => deleteLine({ in_id: id }),
           },
         ]}

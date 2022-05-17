@@ -25,6 +25,7 @@ const DEFAULT_STATE = {
   prezzo_un: "0",
 };
 
+//TODO fix imports and move to templates
 export default function CreateProductDialog({ id, ...dialogProps }) {
   const [open, setOpen] = useState(false);
   const [product, setProduct] = useState();
@@ -69,22 +70,17 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
 
   const isSendable =
     product &&
-    (!product.obblig_codice ||
-      (product.obblig_codice && fields.codice !== "")) &&
+    (!product.obblig_codice || (product.obblig_codice && fields.codice !== "")) &&
     (!product.obblig_dex || (product.obblig_dex && product.art_dex !== "")) &&
     (!product.obblig_linea || (product.obblig_linea && product.linea !== "")) &&
-    (!product.obblig_marchio ||
-      (product.obblig_marchio && product.marchio !== "")) &&
+    (!product.obblig_marchio || (product.obblig_marchio && product.marchio !== "")) &&
     fields.qta !== "" &&
     fields.sconto !== "" &&
     product.cod_iva !== "" &&
     fields.prezzo_un !== "";
 
   return (
-    <Dialog
-      {...dialogProps}
-      onClose={() => dialogProps.onClose() && resetHandler()}
-    >
+    <Dialog {...dialogProps} onClose={() => dialogProps.onClose() && resetHandler()}>
       <DialogTitle>
         <Stack direction="row" justifyContent="space-between">
           Aggiungi un prodotto
@@ -101,36 +97,28 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
               variant="standard"
               disabled={!product || !product.modif_marchio}
               value={product ? product.marchio : ""}
-              onChange={(e) =>
-                setProduct((old) => ({ ...old, marchio: e.target.value }))
-              }
+              onChange={(e) => setProduct((old) => ({ ...old, marchio: e.target.value }))}
               label="Marchio"
             />
             <TextField
               variant="standard"
               disabled={!product || !product.modif_linea}
               value={product ? product.linea : ""}
-              onChange={(e) =>
-                setProduct((old) => ({ ...old, linea: e.target.value }))
-              }
+              onChange={(e) => setProduct((old) => ({ ...old, linea: e.target.value }))}
               label="Linea"
             />
             <TextField
               variant="standard"
               disabled={!product || !product.modif_codice}
               value={fields.codice}
-              onChange={(e) =>
-                setFields((old) => ({ ...old, codice: e.target.value }))
-              }
+              onChange={(e) => setFields((old) => ({ ...old, codice: e.target.value }))}
               label="Codice"
             />
             <TextField
               variant="standard"
               disabled
               value={product ? product.cat_dex : ""}
-              onChange={(e) =>
-                setProduct((old) => ({ ...old, cat_dex: e.target.value }))
-              }
+              onChange={(e) => setProduct((old) => ({ ...old, cat_dex: e.target.value }))}
               label="Categoria"
             />
             <TextField
@@ -138,9 +126,7 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
               variant="standard"
               disabled={!product || !product.modif_dex}
               value={product ? product.art_dex : ""}
-              onChange={(e) =>
-                setProduct((old) => ({ ...old, art_dex: e.target.value }))
-              }
+              onChange={(e) => setProduct((old) => ({ ...old, art_dex: e.target.value }))}
               label="Descrizione"
               multiline
             />
@@ -153,14 +139,11 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
               disabled={!product}
               label="Quantità"
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">n.</InputAdornment>
-                ),
+                endAdornment: <InputAdornment position="start">n.</InputAdornment>,
               }}
               value={fields.qta}
               onChange={(e) =>
-                !isNaN(e.target.value) &&
-                setFields((old) => ({ ...old, qta: e.target.value }))
+                !isNaN(e.target.value) && setFields((old) => ({ ...old, qta: e.target.value }))
               }
             />
             <TextField
@@ -169,9 +152,7 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
               disabled={!product}
               label="Prezzo un."
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">€</InputAdornment>
-                ),
+                endAdornment: <InputAdornment position="start">€</InputAdornment>,
               }}
               value={fields.prezzo_un}
               onChange={(e) =>
@@ -185,14 +166,11 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
               disabled={!product}
               label="Sconto"
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">%</InputAdornment>
-                ),
+                endAdornment: <InputAdornment position="start">%</InputAdornment>,
               }}
               value={fields.sconto}
               onChange={(e) =>
-                !isNaN(e.target.value) &&
-                setFields((old) => ({ ...old, sconto: e.target.value }))
+                !isNaN(e.target.value) && setFields((old) => ({ ...old, sconto: e.target.value }))
               }
             />
 
@@ -202,14 +180,11 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
               disabled
               label="IVA"
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">%</InputAdornment>
-                ),
+                endAdornment: <InputAdornment position="start">%</InputAdornment>,
               }}
               value={product ? product.cod_iva : ""}
               onChange={(e) =>
-                !isNaN(e.target.value) &&
-                setProduct((old) => ({ ...old, cod_iva: e.target.value }))
+                !isNaN(e.target.value) && setProduct((old) => ({ ...old, cod_iva: e.target.value }))
               }
             />
           </Stack>

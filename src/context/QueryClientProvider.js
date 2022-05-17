@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { persistQueryClient } from "react-query/persistQueryClient-experimental";
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental";
 
+//TODO add an onSuccess feedback
 export default function ReactQueryProvider({ children }) {
   const { enqueueSnackbar } = useSnackbar();
 
@@ -24,7 +25,7 @@ export default function ReactQueryProvider({ children }) {
           });
           break;
         case 409:
-          enqueueSnackbar(JSON.parse(error.response.data.msg).message, {
+          enqueueSnackbar(error.response.data.msg, {
             variant: "error",
           });
           break;
