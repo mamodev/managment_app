@@ -369,6 +369,18 @@ const endpoints = {
       },
     },
   }),
+
+  INCOM_FROM_ODA: (api) => ({
+    key: ["INCOM_FROM_ODA"],
+    func: () => GET(api, { table: "v_oda_da_arrivare", profile: "maga" }),
+    record: {
+      func: (data) => POST(api, { table: "arr_da_forn_f", profile: "maga", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["INCOM_FROM_ODA"]);
+        //TODO aggiungere nel futuro la rivalidazione dell'endpoint movimenti di magazzino
+      },
+    },
+  }),
 };
 
 export { endpoints, POST };

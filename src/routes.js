@@ -3,6 +3,8 @@ import PageLoader from "components/layout/PageLoader";
 import ClientSelector from "components/modules/ClientSelector";
 import ConfermaEmissioneODA from "pages/emissioneODA/conferma/ConfermaEmissioneODA";
 import EmissioneODA from "pages/emissioneODA/EmissioneODA";
+import RegistrazioneArrivi from "pages/registrazione_arrivi/RegistrazioneArrivi";
+import RegistrazioneUbicazioni from "pages/registrazione_ubicazioni/RegistrazioneUbicazioni";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 
@@ -131,6 +133,30 @@ export default function Router() {
           element={
             <PageLoader>
               <ConfermaEmissioneODA />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="registrazione_arrivi"
+          element={
+            <PageLoader>
+              <RegistrazioneArrivi />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="registrazione_arrivi"
+          element={
+            <PageLoader>
+              <RegistrazioneArrivi />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="registrazione_ubicazioni/:id"
+          element={
+            <PageLoader>
+              <RegistrazioneUbicazioni />
             </PageLoader>
           }
         />

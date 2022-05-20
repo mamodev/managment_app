@@ -8,7 +8,6 @@ import { isValid } from "config/utils";
 
 //renderGridCellExpandEdit
 function getEditCell(column) {
-  console.log(column?.type);
   if (column?.type) return {};
   else return { renderEditCell: renderGridCellExpandEdit };
 }
@@ -31,11 +30,11 @@ function addValidation(columns, fields) {
   return validatedColumns;
 }
 
-const ToolBar =
+const CustomToolBar =
   (position = "start") =>
-  ({ rows, toolbarActions }) =>
+  ({ rows, toolbarActions, sx }) =>
     (
-      <GridToolbarContainer sx={{ justifyContent: position }}>
+      <GridToolbarContainer sx={{ justifyContent: position, ...sx }}>
         {toolbarActions?.map((Element, i) => (
           <Element key={i} data={rows} />
         ))}
@@ -57,6 +56,7 @@ export default function ApiDataList({
 
   data = [], //Dati con cui popolare la tabella
   rowMap = (e, i) => ({ id: i, ...e }), //Funzione che mappa i dati ricevuti in input (Per dare piu flessibilita)
+  rowFilter = (e) => true,
   rowActions = [], //Pulsanti per azioni da aggiungere su ogni riga
   rowActionsPosition = "start", //definisce la posizione della colonna actions nela tabella
 
@@ -68,11 +68,12 @@ export default function ApiDataList({
 
   onSelectedObjectChange,
   onSelectionModelChange,
-  componentsProps,
+  componentsProps: { toolbarProps, ...componentsProps } = {},
   components,
 
   rowChange = () => {}, //Permette di accedere alle righe dal componente madre
   verbose = false, //Permette di vedere velocemente i dati che arrivano al componente in console
+  commitMode = true,
   ...props
 }) {
   const { fields } = useConfig();
@@ -106,11 +107,14 @@ export default function ApiDataList({
 
   //TODO update only if it really changes
   const cellEditCommitHandler = (params) => {
-    const row = data[rows.indexOf(rows.find((r) => r.id === params.id))];
+    let row;
+    if (commitMode) row = data[rows.indexOf(rows.find((r) => r.id === params.id))];
+    else row = rows[rows.indexOf(rows.find((r) => r.id === params.id))];
     if (row[params.field] !== params.value) onCellEditCommit?.(params, row);
   };
 
   if (verbose) console.log(data);
+
   return (
     <Stack spacing={2} {...containerProps}>
       {filterOutlet}
@@ -119,17 +123,19 @@ export default function ApiDataList({
           autoHeight
           rowHeight={30}
           columns={columns}
-          rows={rows}
+          rows={rows.filter(rowFilter)}
           pageSize={rows.length}
           disableSelectionOnClick
           disableColumnFilter={true}
           disableColumnMenu
           components={{
-            Toolbar: ToolBar(toolbarPosition),
+            Toolbar: CustomToolBar(toolbarPosition),
             Pagination: CustomPagination,
+            ...components,
           }}
           componentsProps={{
-            toolbar: { rows, toolbarActions },
+            toolbar: { rows, toolbarActions, ...toolbarProps },
+            ...componentsProps,
           }}
           onCellEditCommit={cellEditCommitHandler}
           onSelectionModelChange={

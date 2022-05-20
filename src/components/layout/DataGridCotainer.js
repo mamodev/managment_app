@@ -1,4 +1,4 @@
-import { blue, grey, purple } from "@mui/material/colors";
+import { blue, green, grey, purple, yellow } from "@mui/material/colors";
 
 const { styled, Box } = require("@mui/material");
 
@@ -20,6 +20,19 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
   "& .super-app-theme--project .MuiDataGrid-cell": {
     backgroundColor: purple[100],
   },
+  "& .super-app-theme--warning .MuiDataGrid-cell": {
+    backgroundColor: yellow[200],
+  },
+  "& .super-app-theme--warning .MuiDataGrid-cell--editable": {
+    backgroundColor: yellow[100],
+  },
+
+  "& .super-app-theme--success .MuiDataGrid-cell": {
+    backgroundColor: green[200],
+  },
+  "& .super-app-theme--success .MuiDataGrid-cell--editable": {
+    backgroundColor: green[100],
+  },
   "& .super-app-theme--select .MuiDataGrid-cell": {
     backgroundColor: "transparent",
   },
@@ -32,6 +45,11 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
 
     transition: ".2s ease-in-out",
     cursor: "pointer",
+  },
+
+  "& .super-app-theme--errorText": {
+    color: theme.palette.error.main,
+    fontWeight: "600",
   },
 
   "& .MuiDataGrid-cell ": {

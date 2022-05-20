@@ -24,14 +24,14 @@ import { useAuthContext } from "context/AuthContext";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "react-query";
 
-export default function ClientSelector({ value, onChange: setValue, error = false, helperText }) {
+export default function ProviderSelector({ value, onChange: setValue, error = false, helperText }) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState(null);
   const [list, setList] = useState([]);
   const textfieldRef = useRef();
 
   const { api } = useAuthContext();
-  const { key, func } = endpoints.CLIENTS(
+  const { key, func } = endpoints.PROVIDERS(
     api,
     {},
     !!filter && filter !== " " ? { estremi: `like.*${filter.toLowerCase()}*` } : {}
@@ -71,7 +71,7 @@ export default function ClientSelector({ value, onChange: setValue, error = fals
           {value ? (
             <Typography>{value.denom}</Typography>
           ) : (
-            <Typography>Seleziona un cliente</Typography>
+            <Typography>Seleziona fornitore</Typography>
           )}
         </Box>
         {helperText && (
@@ -82,7 +82,7 @@ export default function ClientSelector({ value, onChange: setValue, error = fals
       </Stack>
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
-        <DialogTitle>Seleziona un cliente</DialogTitle>
+        <DialogTitle>Seleziona un fornitore</DialogTitle>
         <DialogContent sx={{ p: 0 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2 }}>
             <TextField
@@ -137,7 +137,7 @@ export default function ClientSelector({ value, onChange: setValue, error = fals
           </TableContainer>
           {list.length === 0 && (
             <Typography sx={{ textAlign: "center", p: 2 }}>
-              Nessun cliente soddisfa i parametri di ricerca
+              Nessun fornitore soddisfa i parametri di ricerca
             </Typography>
           )}
         </DialogContent>

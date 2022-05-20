@@ -1,12 +1,17 @@
 import {
   ChevronLeft,
+  ExpandLess,
+  ExpandMore,
   FactoryRounded,
   Home,
+  Input,
   InventoryRounded,
   PeopleRounded,
+  Warehouse,
 } from "@mui/icons-material";
 import {
   Avatar,
+  Collapse,
   Drawer,
   IconButton,
   List,
@@ -16,12 +21,12 @@ import {
   ListSubheader,
   Stack,
   styled,
-  Switch,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import Clock from "components/modules/Clock";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -33,7 +38,9 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 export default function MenuDrawer({ open, handleClose, width }) {
   const navigate = useNavigate();
+  const [warehouseOpen, setWareHouseOpen] = useState(false);
 
+  const handelWareHouseClick = () => setWareHouseOpen((old) => !old);
   return (
     <Drawer
       variant="persistent"
@@ -50,9 +57,7 @@ export default function MenuDrawer({ open, handleClose, width }) {
     >
       <DrawerHeader>
         <Stack pl={1}>
-          <Typography sx={{ textTransform: "uppercase", fontWeight: 600 }}>
-            Nome azienda
-          </Typography>
+          <Typography sx={{ textTransform: "uppercase", fontWeight: 600 }}>Nome azienda</Typography>
           <Typography>Nome sede</Typography>
         </Stack>
         <IconButton onClick={handleClose}>
@@ -99,6 +104,24 @@ export default function MenuDrawer({ open, handleClose, width }) {
           </ListItemIcon>
           <ListItemText primary="Fornitori" />
         </ListItemButton>
+
+        <ListItemButton onClick={handelWareHouseClick}>
+          <ListItemIcon>
+            <Warehouse />
+          </ListItemIcon>
+          <ListItemText primary="Magazzino" />
+          {warehouseOpen ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={warehouseOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding onClick={() => navigate("/registrazione_arrivi")}>
+            <ListItemButton sx={{ pl: 4 }}>
+              <ListItemIcon>
+                <Input />
+              </ListItemIcon>
+              <ListItemText primary="Registrazione arrivi" />
+            </ListItemButton>
+          </List>
+        </Collapse>
       </List>
 
       <Stack sx={{ position: "absolute", bottom: 0, width: "100%" }}>

@@ -34,13 +34,22 @@ export default function PageLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const appbarRef = useRef();
+  const menuIconRef = useRef();
 
   const handleMenuClose = () => {
     anime.remove(appbarRef.current);
+    anime.remove(menuIconRef.current);
 
     anime({
       targets: appbarRef.current,
       paddingLeft: 0,
+      duration: 500,
+      easing: "easeOutExpo",
+    });
+
+    anime({
+      targets: menuIconRef.current,
+      opacity: 1,
       duration: 500,
       easing: "easeOutExpo",
     });
@@ -49,9 +58,20 @@ export default function PageLayout() {
 
   const handleMenuOpen = () => {
     anime.remove(appbarRef.current);
+    anime.remove(menuIconRef.current);
+
     anime({
       targets: appbarRef.current,
       paddingLeft: drawerWidth,
+      duration: 500,
+      easing: "easeOutExpo",
+    });
+    anime({
+      targets: menuIconRef.current,
+      opacity: {
+        value: 0,
+        duration: 10,
+      },
       duration: 500,
       easing: "easeOutExpo",
     });
@@ -78,12 +98,7 @@ export default function PageLayout() {
         <>
           <AppBar ref={appbarRef} position="fixed" open={menuOpen}>
             <Toolbar>
-              <IconButton
-                edge="start"
-                color="inherit"
-                onClick={handleMenuOpen}
-                sx={{ ...(menuOpen ? { display: "none" } : {}) }}
-              >
+              <IconButton edge="start" color="inherit" onClick={handleMenuOpen} ref={menuIconRef}>
                 <MenuIcon />
               </IconButton>
               <WindowTabs />
