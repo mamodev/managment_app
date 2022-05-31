@@ -13,6 +13,12 @@ const theme = createTheme({
       xl: 1920,
     },
   },
+  palette: {
+    white: {
+      main: "white",
+      contrastText: "#1976d2",
+    },
+  },
 });
 
 export default theme;

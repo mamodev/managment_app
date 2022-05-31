@@ -26,7 +26,7 @@ const fields = [
     required: "true",
   },
   {
-    headerName: "Doc. fron nr",
+    headerName: "Doc. fornitore numero",
     field: "doc",
     type: "string",
     required: "true",

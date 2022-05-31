@@ -5,7 +5,7 @@ import FormTextField from "components/base/FormTextField";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import { useAuthContext } from "context/AuthContext";
 import { useState } from "react";
-import ApiDataForm from "./ApiDataForm";
+import ApiDataForm from "../../templates/ApiDataForm";
 
 const fields = [
   {
@@ -144,37 +144,49 @@ const fields = [
   },
 ];
 
-export default function CreateClient({
+export default function CreateSubject({
   callback,
   size = "normal",
   variant = "text",
   text = "Aggiungi",
+  color = "primary",
+  title = "Aggiungi soggetto",
   startIcon = <Add />,
   dataForm,
+  endpoint,
 }) {
   const [open, setOpen] = useState();
   const { api } = useAuthContext();
 
   return (
     <>
-      <Button size={size} variant={variant} startIcon={startIcon} onClick={() => setOpen(true)}>
+      <Button
+        size={size}
+        color={color}
+        variant={variant}
+        startIcon={startIcon}
+        onClick={() => setOpen(true)}
+      >
         {text}
       </Button>
-      <ApiDataForm
-        endpoint={endpoints.CLIENTS(api).add}
-        callback={callback}
-        send={(mutate, fields) => {
-          if (!fields.in_nome) fields.in_nome = "";
-          if (!fields.in_cognome) fields.in_cognome = "";
-          mutate(fields);
-        }}
-        title="Aggiungi cliente"
-        sendText="Aggiungi"
-        open={open}
-        onClose={() => setOpen(false)}
-        fields={fields}
-        {...dataForm}
-      />
+
+      {open && (
+        <ApiDataForm
+          endpoint={endpoint(api).add}
+          callback={callback}
+          send={(mutate, fields) => {
+            if (!fields.in_nome) fields.in_nome = "";
+            if (!fields.in_cognome) fields.in_cognome = "";
+            mutate(fields);
+          }}
+          title={title}
+          sendText="Aggiungi"
+          open={open}
+          onClose={() => setOpen(false)}
+          fields={fields}
+          {...dataForm}
+        />
+      )}
     </>
   );
 }

@@ -1,5 +1,6 @@
 //OPTIMIZE add limit to querys
 //OPTIMIZE select param of GET querys
+
 async function GET(api, { table, profile, ...args }) {
   let query = table + (!!Object.keys(args).length ? "?" : "");
   for (let arg in args) {
@@ -294,9 +295,6 @@ const endpoints = {
             in_tipo: "F",
             in_id: null,
             in_tum: null,
-            in_persona: null,
-            in_nome: "",
-            in_cognome: "",
             ...data,
           },
         }),
@@ -331,6 +329,16 @@ const endpoints = {
         queryClient.invalidateQueries(["CLIENT_DETAIL", id]);
       },
     },
+  }),
+
+  SUBJECTS: (api, props, filters = {}) => ({
+    key: ["SUBJECTS", filters],
+    func: () =>
+      GET(api, {
+        table: "v_soggetti",
+        profile: "base",
+        ...filters,
+      }),
   }),
 
   CONFIG: (api, props, filters) => ({

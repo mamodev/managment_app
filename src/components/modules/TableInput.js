@@ -9,11 +9,10 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
 } from "@mui/material";
 import DateInput from "components/base/DateInput";
 import { useCallback, useEffect, useState } from "react";
-import ProviderSelector from "./ProviderSelector";
+import ProviderSelector from "./subjects/ProviderSelector";
 
 const HeaderCell = styled(TableCell)(({ theme }) => ({
   fontWeight: "600",

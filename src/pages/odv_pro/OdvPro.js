@@ -15,7 +15,7 @@ import {
 import { Box } from "@mui/system";
 import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
-import ClientSelector from "components/modules/ClientSelector";
+import ClientSelector from "components/modules/subjects/ClientSelector";
 import ApiDataList from "components/templates/ApiDataList";
 import { useAuthContext } from "context/AuthContext";
 import { useWindowManagerContext } from "context/WindowManagerContext";
