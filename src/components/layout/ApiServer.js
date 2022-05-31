@@ -5,8 +5,10 @@ import { useQuery } from "react-query";
 export default function ApiServer({
   endpoint,
   children,
+  singleMode,
   filters: { queryCount, ...filters } = {},
   params,
+  verbose = false,
 }) {
   const { api } = useContext(AuthContext);
   const { key, func } = endpoint(api, params, filters);
@@ -16,7 +18,15 @@ export default function ApiServer({
 
   useEffect(() => {
     if (!isFetching) {
-      setDataState(data);
+      if (singleMode) {
+        if (Array.isArray(data) && data.length > 0) {
+          setDataState(data[0]);
+          if (verbose) console.log(data);
+        } else setDataState({});
+      } else {
+        setDataState(data);
+        if (verbose) console.log(data);
+      }
     }
   }, [data, isFetching]);
 

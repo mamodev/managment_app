@@ -13,6 +13,7 @@ async function GET(api, { table, profile, ...args }) {
   const response = await api.get(query, {
     headers: { "Accept-Profile": profile },
   });
+
   return response.data;
 }
 
@@ -20,6 +21,7 @@ async function POST(api, { table, profile, data }) {
   const response = await api.post(`rpc/${table}`, data, {
     headers: { "Content-Profile": profile },
   });
+
   return response.data;
 }
 
@@ -370,14 +372,100 @@ const endpoints = {
     },
   }),
 
-  INCOM_FROM_ODA: (api) => ({
-    key: ["INCOM_FROM_ODA"],
-    func: () => GET(api, { table: "v_oda_da_arrivare", profile: "maga" }),
+  INCOM_FROM_ODA: (api, params = {}, filters = {}) => ({
+    key: ["INCOM_FROM_ODA", filters],
+    func: () => GET(api, { table: "v_oda_da_arrivare", profile: "maga", ...filters }),
     record: {
       func: (data) => POST(api, { table: "arr_da_forn_f", profile: "maga", data }),
       revalidate: (data, queryClient) => {
         queryClient.invalidateQueries(["INCOM_FROM_ODA"]);
         //TODO aggiungere nel futuro la rivalidazione dell'endpoint movimenti di magazzino
+      },
+    },
+  }),
+
+  DOCUMENTS: (api, params = {}, filters = {}) => ({
+    key: ["DOCUMENTS"],
+    func: () => GET(api, { table: "v_mov_test", profile: "maga", ...filters }),
+  }),
+
+  MOVEMENTS: (api, params = {}, filters = {}) => ({
+    key: ["MOVEMENTS"],
+    func: () => GET(api, { table: "v_mov_righe", profile: "maga", ...filters }),
+  }),
+
+  MOVEMENT: (api, { id }, filters = {}) => ({
+    key: ["MOVEMENTS", id],
+    func: () => GET(api, { table: "v_mov_test", profile: "maga", mov_id: `eq.${id}`, ...filters }),
+  }),
+
+  LOCATION: (api, { id }, filters = {}) => ({
+    key: ["LOCATION", id],
+    func: () => GET(api, { table: "v_mov_arrivo_riferim", profile: "maga", ubicaz_id: `eq.${id}` }),
+    save: {
+      func: (data) => POST(api, { table: "ubic_di_rif", profile: "maga", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["LOCATION"]);
+      },
+    },
+  }),
+
+  MOVEMENT_LOCATION: (api, { id }, filters = {}) => ({
+    key: ["MOVEMENTS", id, "LOCATION"],
+    func: () => GET(api, { table: "v_mov_arrivo_riferim", profile: "maga", mov_id: `eq.${id}` }),
+    save: {
+      func: (data) => POST(api, { table: "ubic_di_rif", profile: "maga", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["MOVEMENTS"]);
+      },
+    },
+  }),
+
+  MOVEMENT_STATES: (api, params = {}, filters = {}) => ({
+    key: ["MOVEMENTS", "STATES"],
+    func: () =>
+      GET(api, { table: "domini", profile: "core", ambito: "eq.movmag", dominio: "eq.stato_doc" }),
+  }),
+
+  MOVEMENT_CAUSALS: (api, params = {}, filters = {}) => ({
+    key: ["MOVEMENTS", "CAUSALS"],
+    func: () => GET(api, { table: "causali_mov", profile: "base" }),
+  }),
+
+  MOVEMENT_STOCKS: (api, params = {}, filters = {}) => ({
+    key: ["MOVMENT", "STOCKS"],
+    func: () => GET(api, { table: "v_giacenze", profile: "maga", ...filters }),
+  }),
+
+  WAREHOUSES: (api, params = {}, filters = {}) => ({
+    key: ["WHEREHOUSES"],
+    func: () => GET(api, { table: "magazzini", profile: "base", ...filters }),
+  }),
+
+  SHIPMENT_PLANNING: (api, { id }, filters = {}) => ({
+    key: ["SHIPMENT_PLANNING", id],
+    func: () =>
+      GET(api, { table: "v_odv_pian_gr", profile: "pian", gru_cons_id: `eq.${id}`, ...filters }),
+  }),
+
+  SHIPMENT_PLANNING_LIST: (api, { id }, filters = {}) => ({
+    key: ["SHIPMENT_PLANNING", id, "LIST"],
+    func: () =>
+      GET(api, { table: "v_odv_pian", profile: "pian", gru_cons_id: `eq.${id}`, ...filters }),
+    update: {
+      func: (data) => POST(api, { table: "odv_qta_preb", profile: "vend", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["SHIPMENT_PLANNING", id, "LIST"]);
+        //FIXME this update isn't working
+        queryClient.setQueryData(["SHIPMENT_PLANNING", id, "LIST"], (old) =>
+          old.map((e) => (e.gru_cons_id === id ? { qta_prebolla: data.qta_prebolla, ...e } : e))
+        );
+      },
+    },
+    issue: {
+      func: (data) => POST(api, { table: "mov_da_preb_f", profile: "maga", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["SHIPMENT_PLANNING"]);
       },
     },
   }),

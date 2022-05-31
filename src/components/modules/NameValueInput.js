@@ -10,7 +10,7 @@ export default function NameValueInput({
   onChange: setValue,
   editable = false,
   error = false,
-  nameWidth = 150,
+  width = 200,
 }) {
   return (
     <TableRow>
@@ -35,7 +35,7 @@ export default function NameValueInput({
           <InputComponent
             error={error}
             variant="standard"
-            sx={{ width: 200 }}
+            sx={{ width: width }}
             size="small"
             onChange={(val) => setValue(val)}
             value={value}
@@ -45,7 +45,7 @@ export default function NameValueInput({
           <BlankTextField
             multiline={multiline}
             error={error}
-            sx={{ width: 200 }}
+            sx={{ width: width }}
             onChange={(e) => setValue(e.target.value)}
             disabled={!editable}
             value={value}

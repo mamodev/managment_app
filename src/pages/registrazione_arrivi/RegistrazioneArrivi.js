@@ -1,6 +1,6 @@
 import { ViewList } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
-import { Button, Stack, Tooltip, Typography } from "@mui/material";
+import { Button, Paper, Stack, Tooltip, Typography } from "@mui/material";
 import { green, yellow } from "@mui/material/colors";
 import { Box } from "@mui/system";
 import { GridToolbarQuickFilter } from "@mui/x-data-grid";
@@ -11,14 +11,13 @@ import TableInput from "components/modules/TableInput";
 import ApiDataList from "components/templates/ApiDataList";
 import { formatDate } from "config/utils";
 import { useAuthContext } from "context/AuthContext";
-import { useSnackbar } from "notistack";
 import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 
 //OPTIMIZE Check state re-renders
 //TODO add specific validation
-
+//FIXME fix error of required open in dialog, when opening provider selector
 const fields = [
   {
     headerName: "Fornitore",
@@ -55,7 +54,7 @@ const fields = [
 const columns = [
   { field: "numero", headerName: "Nr ODA", flex: 1 },
   { field: "riferimento", headerName: "Riferimento", flex: 1 },
-  { field: "dex_esresa", headerName: "Descrizione", flex: 2 },
+  { field: "articolo", headerName: "Articolo", flex: 2 },
   { field: "um", headerName: "um", flex: 0.5 },
   { field: "qta", headerName: "Qta prevista", flex: 0.5, type: "number" },
   {
@@ -198,7 +197,6 @@ export default function RegistrazioneArrivi() {
   }, []);
 
   const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
 
   const { api, sede } = useAuthContext();
   const { func, revalidate } = endpoints.INCOM_FROM_ODA(api).record;
@@ -208,7 +206,6 @@ export default function RegistrazioneArrivi() {
     onSuccess: (data) => {
       revalidate(data, queryClinet);
       navigate(`/mag_ubicazioni/${data.id}`);
-      enqueueSnackbar(data.msg, { variant: "success" });
     },
   });
 
@@ -243,38 +240,53 @@ export default function RegistrazioneArrivi() {
       </Stack>
 
       <TableInput fields={fields} onChange={handleHaderChange} />
-      <ApiServer endpoint={endpoints.INCOM_FROM_ODA}>
-        <ApiDataList
-          columns={columns}
-          toolbarPosition="space-between"
-          toolbarActions={[
-            () => (
-              <GridToolbarQuickFilter autoComplete="off" debounceMs={200} placeholder="Filtra..." />
-            ),
-            () => (
-              <Riepilogo
-                expectedColli={header.colli}
-                colli={getColli(rows)}
-                onSummary={() => setSummaryActive((old) => !old)}
-                summaryActive={summaryActive}
-              />
-            ),
-          ]}
-          onCellEditCommit={handleCellEditCommit}
-          rowMap={(e, i) => ({ id: i, ...e, qta_in: 0, colli_in: 0 })}
-          rowFilter={summaryActive ? (e) => e.qta_in > 0 && e.colli_in > 0 : (e) => true}
-          rowChange={handleRowsChange}
-          componentsProps={{ toolbarProps: { sx: { py: 1, px: 3, pt: 2 } } }}
-          components={{ Footer: CustomFooter }}
-          commitMode={false}
-          getRowClassName={({ row }) => {
-            if ((row.colli_in > 0 && row.qta_in <= 0) || (row.colli_in <= 0 && row.qta_in > 0))
-              return "super-app-theme--warning";
-            if (row.colli_in > 0 && row.qta_in > 0) return "super-app-theme--success";
-            else return "";
-          }}
-        />
-      </ApiServer>
+      {header.fornitore ? (
+        <ApiServer
+          endpoint={endpoints.INCOM_FROM_ODA}
+          filters={{ forn_id: `eq.${header.fornitore.id}` }}
+        >
+          <ApiDataList
+            columns={columns}
+            toolbarPosition="space-between"
+            toolbarActions={[
+              () => (
+                <GridToolbarQuickFilter
+                  autoComplete="off"
+                  debounceMs={200}
+                  placeholder="Filtra..."
+                />
+              ),
+              () => (
+                <Riepilogo
+                  expectedColli={header.colli}
+                  colli={getColli(rows)}
+                  onSummary={() => setSummaryActive((old) => !old)}
+                  summaryActive={summaryActive}
+                />
+              ),
+            ]}
+            onCellEditCommit={handleCellEditCommit}
+            rowMap={(e, i) => ({ id: i, ...e, qta_in: 0, colli_in: 0 })}
+            rowFilter={summaryActive ? (e) => e.qta_in > 0 && e.colli_in > 0 : (e) => true}
+            rowChange={handleRowsChange}
+            componentsProps={{ toolbarProps: { sx: { py: 1, px: 3, pt: 2 } } }}
+            components={{ Footer: CustomFooter }}
+            commitMode={false}
+            getRowClassName={({ row }) => {
+              if ((row.colli_in > 0 && row.qta_in <= 0) || (row.colli_in <= 0 && row.qta_in > 0))
+                return "super-app-theme--warning";
+              if (row.colli_in > 0 && row.qta_in > 0) return "super-app-theme--success";
+              else return "";
+            }}
+          />
+        </ApiServer>
+      ) : (
+        <Paper width="100%" elevation={3}>
+          <Stack direction="row" justifyContent="center">
+            <Typography p={4}>Prima di procedere, seleziona un fornitore!</Typography>
+          </Stack>
+        </Paper>
+      )}
     </Stack>
   );
 }

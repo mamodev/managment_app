@@ -1,6 +1,7 @@
 import {
   debounce,
   Paper,
+  styled,
   Table,
   TableBody,
   TableCell,
@@ -13,6 +14,15 @@ import {
 import DateInput from "components/base/DateInput";
 import { useCallback, useEffect, useState } from "react";
 import ProviderSelector from "./ProviderSelector";
+
+const HeaderCell = styled(TableCell)(({ theme }) => ({
+  fontWeight: "600",
+  padding: "8px 20px",
+}));
+
+const BodyCell = styled(TableCell)(({ theme }) => ({
+  padding: "8px 20px",
+}));
 
 const textFieldHandleChange = (setState, field) => (e) =>
   setState((old) => {
@@ -109,12 +119,12 @@ export default function TableInput({ container = Paper, fields = [], onChange })
   return (
     <TableContainer component={container}>
       <Table sx={{ minWidth: 700 }} aria-label="customized table">
-        <TableHead>
+        <TableHead sx={{ bgcolor: "primary.light" }}>
           <TableRow>
             {fields.map((e) => (
-              <TableCell key={e.field} sx={{ fontWeight: 600 }}>
+              <HeaderCell key={e.field} sx={{ fontWeight: 600 }}>
                 {e.headerName}
-              </TableCell>
+              </HeaderCell>
             ))}
           </TableRow>
         </TableHead>
@@ -124,14 +134,14 @@ export default function TableInput({ container = Paper, fields = [], onChange })
               fields.map((e) => {
                 const { component: Component, props, handleChange } = getInputComponent(e.type);
                 return (
-                  <TableCell key={e.field}>
+                  <BodyCell key={e.field}>
                     <Component
                       {...props}
                       {...e.props}
                       error={e.required && state[e.field] === getDefaultValue(e.type)}
                       helperText={
                         e.required && state[e.field] === getDefaultValue(e.type)
-                          ? "Questo campo è obbligatorio"
+                          ? "Campo necessario"
                           : undefined
                       }
                       placeholder={e.headerName}
@@ -139,7 +149,7 @@ export default function TableInput({ container = Paper, fields = [], onChange })
                       onChange={handleChange(setState, e.field)}
                       autoComplete="off"
                     />
-                  </TableCell>
+                  </BodyCell>
                 );
               })}
           </TableRow>

@@ -1,12 +1,15 @@
 import {
+  Article,
   ChevronLeft,
   ExpandLess,
   ExpandMore,
   FactoryRounded,
   Home,
   Input,
+  Inventory2,
   InventoryRounded,
   PeopleRounded,
+  Timeline,
   Warehouse,
 } from "@mui/icons-material";
 import {
@@ -70,7 +73,7 @@ export default function MenuDrawer({ open, handleClose, width }) {
           width: "100%",
           maxWidth: 360,
           bgcolor: "background.paper",
-          mt: 10,
+          mt: 5,
         }}
         component="nav"
         aria-labelledby="nested-list-subheader"
@@ -118,7 +121,31 @@ export default function MenuDrawer({ open, handleClose, width }) {
               <ListItemIcon>
                 <Input />
               </ListItemIcon>
-              <ListItemText primary="Registrazione arrivi" />
+              <ListItemText primary="Arrivi" />
+            </ListItemButton>
+          </List>
+          <List component="div" disablePadding onClick={() => navigate("/documenti")}>
+            <ListItemButton sx={{ pl: 4 }}>
+              <ListItemIcon>
+                <Article />
+              </ListItemIcon>
+              <ListItemText primary="Documenti" />
+            </ListItemButton>
+          </List>
+          <List component="div" disablePadding onClick={() => navigate("/movimenti")}>
+            <ListItemButton sx={{ pl: 4 }}>
+              <ListItemIcon>
+                <Timeline />
+              </ListItemIcon>
+              <ListItemText primary="Movimenti" />
+            </ListItemButton>
+          </List>
+          <List component="div" disablePadding onClick={() => navigate("/Giacenze")}>
+            <ListItemButton sx={{ pl: 4 }}>
+              <ListItemIcon>
+                <Inventory2 />
+              </ListItemIcon>
+              <ListItemText primary="Giacenze" />
             </ListItemButton>
           </List>
         </Collapse>

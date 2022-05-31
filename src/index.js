@@ -18,9 +18,9 @@ import { ConfigContextProvider } from "context/ConfigContext";
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthContextProvider>
-        <ThemeProvider theme={theme}>
-          <SnackbarProvider maxSnack={5}>
+      <ThemeProvider theme={theme}>
+        <SnackbarProvider maxSnack={5}>
+          <AuthContextProvider>
             <ReactQueryProvider>
               <ConfigContextProvider>
                 <WindowManagerContextProvider>
@@ -30,9 +30,9 @@ ReactDOM.render(
                 </WindowManagerContextProvider>
               </ConfigContextProvider>
             </ReactQueryProvider>
-          </SnackbarProvider>
-        </ThemeProvider>
-      </AuthContextProvider>
+          </AuthContextProvider>
+        </SnackbarProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")

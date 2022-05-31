@@ -22,6 +22,7 @@ export default function ApiDataHeader({
   valueSet = (val) => (val === "" ? null : val),
   sx,
   fullWidth = false,
+  verbose = false,
   ...props
 }) {
   const [data, setData] = useState(null);
@@ -42,7 +43,8 @@ export default function ApiDataHeader({
 
   useEffect(() => {
     if (defaultData?.length > 0) setData(defaultData?.reduce((object, next) => object));
-  }, [defaultData]);
+    if (verbose) console.log(defaultData);
+  }, [defaultData, verbose]);
 
   const changeData = (data) => {
     setData(data);
@@ -109,6 +111,7 @@ export default function ApiDataHeader({
                     multiline={e.multiline}
                     inputComponent={e.component}
                     name={e.nameid ? data[e.nameid] : e.name}
+                    width={e.width}
                     onChange={(val) =>
                       changeData((old) => {
                         const newData = { ...old };

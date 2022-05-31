@@ -1,6 +1,17 @@
 import { DatePicker } from "@mui/lab";
 import { TextField } from "@mui/material";
 
+function getMinDate() {
+  const minDate = new Date();
+  minDate.setFullYear(minDate.getFullYear() - 2);
+  return minDate;
+}
+function getMaxDate() {
+  const minDate = new Date();
+  minDate.setFullYear(minDate.getFullYear() + 5);
+  return minDate;
+}
+
 export default function DateInput({
   value,
   onChange: setValue,
@@ -11,17 +22,21 @@ export default function DateInput({
   error = false,
   ...props
 }) {
+  const isValidDate = value instanceof Date && isFinite(value);
+
   return (
     <DatePicker
       {...props}
       value={value}
       onChange={(newValue) => setValue(newValue)}
+      minDate={getMinDate()}
+      maxDate={getMaxDate()}
       renderInput={(params) => (
         <TextField
           {...inputProps}
           {...params}
-          error={error}
-          helperText={helperText}
+          error={error || (value && !isValidDate)}
+          helperText={value && isValidDate ? helperText : "La data non è valida"}
           autoComplete={autocomplete}
           label={placeholder}
         />

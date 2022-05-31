@@ -1,4 +1,4 @@
-import { Search } from "@mui/icons-material";
+import { Colorize, Search } from "@mui/icons-material";
 import {
   Button,
   Dialog,
@@ -71,7 +71,10 @@ export default function ProviderSelector({ value, onChange: setValue, error = fa
           {value ? (
             <Typography>{value.denom}</Typography>
           ) : (
-            <Typography>Seleziona fornitore</Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography>Fornitore</Typography>
+              <Colorize />
+            </Stack>
           )}
         </Box>
         {helperText && (

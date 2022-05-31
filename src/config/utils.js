@@ -1,6 +1,13 @@
+import { endpoints } from "api";
+import ApiFilterServer from "components/modules/filters/ApiFilterServer";
+import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
+import DateFilter from "components/modules/filters/DateFilter";
+import TextFilter from "components/modules/filters/TextFilter";
+
 const formatDate = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
-const reverseDate = (date, separator = "-") => date.split("-").reverse().join(separator);
+const reverseDate = (date, separator = "-") =>
+  date ? date.split("-").reverse().join(separator) : date;
 
 const validate = (field, value, fields) => {
   const rules = fields[field];
@@ -49,4 +56,55 @@ const debounce = (func, wait, immediate) => {
   };
 };
 
-export { formatDate, reverseDate, isValid, debounce };
+const default_filters = {
+  sede: (field = "sede") => ({
+    name: field,
+    component: ApiFilterServer,
+    defaultValue: null,
+    filterRender: (val) => `eq.${val.sede}`,
+    componentProps: {
+      endpoint: endpoints.SITES,
+      children: AutocompleteFilter,
+      mapData: (data) => ({ label: data.dexb, sede: data.sede }),
+      dataName: "options",
+      placeholder: "Sede",
+      isOptionEqualToValue: (option, value) => option.label === value.label,
+      sx: { minWidth: 150 },
+      size: "small",
+    },
+  }),
+  likeText: ({ field, placeholder = "Inserisci testo", size = "small" }) => ({
+    name: field,
+    component: TextFilter,
+    defaultValue: "",
+    filterRender: (val) => `ilike.*${val}*`,
+    componentProps: {
+      placeholder: placeholder,
+      sx: { minWidth: 300 },
+      size: size,
+    },
+  }),
+  dateGraterThen: ({ field, placeholder = "Dal", size = "small" }) => ({
+    name: field,
+    component: DateFilter,
+    defaultValue: null,
+    filterRender: (val) => `gte.${formatDate(val)}`,
+    componentProps: {
+      placeholder: placeholder,
+      sx: { minWidth: 150 },
+      inputProps: { size },
+    },
+  }),
+  dateSmallerThen: ({ field, placeholder = "Al", size = "small" }) => ({
+    name: field,
+    component: DateFilter,
+    defaultValue: null,
+    filterRender: (val) => `lte.${formatDate(val)}`,
+    componentProps: {
+      placeholder: placeholder,
+      sx: { minWidth: 150 },
+      inputProps: { size },
+    },
+  }),
+};
+export { formatDate, reverseDate, isValid, debounce, default_filters };

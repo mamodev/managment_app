@@ -110,6 +110,7 @@ export default function ApiDataList({
     let row;
     if (commitMode) row = data[rows.indexOf(rows.find((r) => r.id === params.id))];
     else row = rows[rows.indexOf(rows.find((r) => r.id === params.id))];
+
     if (row[params.field] !== params.value) onCellEditCommit?.(params, row);
   };
 

@@ -1,12 +1,16 @@
 import PageLayout from "components/layout/PageLayout";
 import PageLoader from "components/layout/PageLoader";
-import ClientSelector from "components/modules/ClientSelector";
 import ConfermaEmissioneODA from "pages/emissioneODA/conferma/ConfermaEmissioneODA";
 import EmissioneODA from "pages/emissioneODA/EmissioneODA";
+import Documenti from "pages/documenti/Documenti";
 import RegistrazioneArrivi from "pages/registrazione_arrivi/RegistrazioneArrivi";
 import RegistrazioneUbicazioni from "pages/registrazione_ubicazioni/RegistrazioneUbicazioni";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
+import Giacenze from "pages/giacenze/Giacenze";
+import Movimenti from "pages/movimenti/Movimenti";
+import Ubicazione from "pages/ubicazione/Ubicazione";
+import PianifSped from "pages/pianif_sped/PianifSped";
 
 const Clienti = React.lazy(() => import("pages/clienti/Clienti"));
 const ClientDetails = React.lazy(() => import("pages/clienti/[id]/ClientDetails"));
@@ -136,6 +140,24 @@ export default function Router() {
             </PageLoader>
           }
         />
+
+        {/*OPTIMIZE potrebbe andare tutto sotto url /magazzino/...*/}
+        <Route
+          path="giacenze"
+          element={
+            <PageLoader>
+              <Giacenze />
+            </PageLoader>
+          }
+        />
+        <Route
+          path="movimenti"
+          element={
+            <PageLoader>
+              <Movimenti />
+            </PageLoader>
+          }
+        />
         <Route
           path="registrazione_arrivi"
           element={
@@ -160,6 +182,36 @@ export default function Router() {
             </PageLoader>
           }
         />
+        <Route path="documenti/*">
+          <Route
+            index
+            element={
+              <PageLoader>
+                <Documenti />
+              </PageLoader>
+            }
+          />
+        </Route>
+        <Route path="ubicazione/:id">
+          <Route
+            index
+            element={
+              <PageLoader>
+                <Ubicazione />
+              </PageLoader>
+            }
+          />
+        </Route>
+        <Route path="pianif_sped/:id">
+          <Route
+            index
+            element={
+              <PageLoader>
+                <PianifSped />
+              </PageLoader>
+            }
+          />
+        </Route>
       </Route>
     </Routes>
   );

@@ -1,41 +1,10 @@
-import { useSnackbar } from "notistack";
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 import { persistQueryClient } from "react-query/persistQueryClient-experimental";
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental";
 
-//TODO add an onSuccess feedback
 export default function ReactQueryProvider({ children }) {
-  const { enqueueSnackbar } = useSnackbar();
-
-  const handleError = useCallback(
-    (error) => {
-      const status = error.response.status;
-      console.log(error.response);
-      switch (status) {
-        case 400:
-          enqueueSnackbar(error.response.data.message, {
-            variant: "error",
-          });
-          break;
-        case 404:
-          enqueueSnackbar("Impossibile eseguire questa funzione", {
-            variant: "error",
-          });
-          break;
-        case 409:
-          enqueueSnackbar(error.response.data.msg, {
-            variant: "error",
-          });
-          break;
-        default:
-          enqueueSnackbar("C'è stato un errore");
-      }
-    },
-    [enqueueSnackbar]
-  );
-
   const queryClient = useMemo(
     () =>
       new QueryClient({
@@ -44,11 +13,7 @@ export default function ReactQueryProvider({ children }) {
             refetchOnWindowFocus: false,
             refetchOnMount: false,
             refetchOnReconnect: false,
-            onError: handleError,
             cacheTime: 1000 * 60 * 60 * 2,
-          },
-          mutations: {
-            onError: handleError,
           },
         },
       }),
