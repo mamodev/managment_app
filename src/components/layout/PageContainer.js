@@ -8,6 +8,7 @@ const PageContainer = styled(Box, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
+  height: "100%",
   ...(open && {
     width: `calc(100% - ${drawerwidth}px)`,
     marginLeft: `${drawerwidth}px`,

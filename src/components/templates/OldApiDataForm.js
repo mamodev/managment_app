@@ -1,10 +1,19 @@
 import { LoadingButton } from "@mui/lab";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+} from "@mui/material";
 import { useConfig } from "context/ConfigContext";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { isValid } from "config/utils";
 
+//OPTIMIZE make this component use the DATAFORM
 export default function ApiDataForm({
   open,
   onClose: close,
@@ -12,6 +21,7 @@ export default function ApiDataForm({
   fields = [],
   send = () => {},
   title = "Titolo",
+  caption = null,
   sendText = "Invia",
   closeText = "Chiudi",
   callback = () => {},
@@ -56,9 +66,10 @@ export default function ApiDataForm({
   useEffect(() => setValues(fields.map((e) => e.defaultValue)), [open, fields]);
 
   return (
-    <Dialog open={open} onClose={close}>
+    <Dialog open={open} onClose={close} fullWidth>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
+        {caption && <DialogContentText>{caption}</DialogContentText>}
         <Grid container rowSpacing={2} columnSpacing={5}>
           {fields
             .map((e, i) => ({ ...e, i: i }))

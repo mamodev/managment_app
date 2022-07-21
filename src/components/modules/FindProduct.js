@@ -34,41 +34,26 @@ export default function FindProduct({ isOpen, onClose }) {
         <Stack direction="row" mb={2} spacing={2}>
           <TextField
             value={filters.marchio}
-            onChange={(e) =>
-              setFilters((old) => ({ ...old, marchio: e.target.value }))
-            }
+            onChange={(e) => setFilters((old) => ({ ...old, marchio: e.target.value }))}
             label="Marchio"
           />
           <TextField
             value={filters.cat}
-            onChange={(e) =>
-              setFilters((old) => ({ ...old, cat: e.target.value }))
-            }
+            onChange={(e) => setFilters((old) => ({ ...old, cat: e.target.value }))}
             label="Categoria"
           />
           <TextField
             value={filters.desc}
-            onChange={(e) =>
-              setFilters((old) => ({ ...old, desc: e.target.value }))
-            }
+            onChange={(e) => setFilters((old) => ({ ...old, desc: e.target.value }))}
             label="Descrizione"
           />
         </Stack>
         <ApiServer
           endpoint={endpoints.PRODUCTS}
           filters={{
-            marchio:
-              filters.marchio === ""
-                ? undefined
-                : `like.${filters.marchio.toUpperCase()}*`,
-            cat_dex:
-              filters.cat === ""
-                ? undefined
-                : `like.*${filters.cat.toUpperCase()}*`,
-            art_dex:
-              filters.desc === ""
-                ? undefined
-                : `like.*${filters.desc.toUpperCase()}*`,
+            marchio: filters.marchio === "" ? undefined : `ilike.${filters.marchio.toUpperCase()}*`,
+            cat_dex: filters.cat === "" ? undefined : `ilike.*${filters.cat.toUpperCase()}*`,
+            art_dex: filters.desc === "" ? undefined : `ilike.*${filters.desc.toUpperCase()}*`,
             limit: "10",
           }}
         >
@@ -97,6 +82,7 @@ function ProductTable({ data, onSelect }) {
           <TableRow>
             <StyledTableCell>Marchio</StyledTableCell>
             <StyledTableCell>Linea</StyledTableCell>
+            <StyledTableCell>Codice</StyledTableCell>
             <StyledTableCell>Categoria</StyledTableCell>
             <StyledTableCell>Descrizione</StyledTableCell>
           </TableRow>
@@ -116,6 +102,7 @@ function ProductTable({ data, onSelect }) {
             >
               <StyledTableCell>{e.marchio}</StyledTableCell>
               <StyledTableCell>{e.linea}</StyledTableCell>
+              <StyledTableCell>{e.codice}</StyledTableCell>
               <StyledTableCell>{e.cat_dex}</StyledTableCell>
               <StyledTableCell>{e.art_dex}</StyledTableCell>
             </TableRow>

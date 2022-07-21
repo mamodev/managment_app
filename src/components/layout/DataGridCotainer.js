@@ -1,8 +1,11 @@
-import { blue, green, grey, purple, yellow } from "@mui/material/colors";
+import { blue, green, grey, red, yellow } from "@mui/material/colors";
 
 const { styled, Box } = require("@mui/material");
 
-const DataGridContainer = styled(Box)(({ theme }) => ({
+const DataGridContainer = styled(Box)(({ theme, height }) => ({
+  height: height,
+  backgroundColor: theme.palette.common.white,
+  position: "relative",
   "& .super-app-theme--link": {
     "&:hover": {
       fontSize: 16,
@@ -18,7 +21,7 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
     color: theme.palette.error.main,
   },
   "& .super-app-theme--project .MuiDataGrid-cell": {
-    backgroundColor: purple[100],
+    backgroundColor: theme.palette.primary.light,
   },
   "& .super-app-theme--warning .MuiDataGrid-cell": {
     backgroundColor: yellow[200],
@@ -27,12 +30,37 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
     backgroundColor: yellow[100],
   },
 
+  "& .super-app-theme--hide .MuiDataGrid-booleanCell[data-value='false']": {
+    backgroundColor: grey[100],
+    color: grey[100],
+  },
+
+  "& .super-app-theme--group.MuiDataGrid-cell": {
+    backgroundColor: theme.palette.primary.light,
+    display: "block",
+    padding: 0,
+  },
+
+  "& .super-app-theme--group.MuiDataGrid-cell--editable": {
+    backgroundColor: theme.palette.primary.light,
+  },
+
   "& .super-app-theme--success .MuiDataGrid-cell": {
     backgroundColor: green[200],
   },
   "& .super-app-theme--success .MuiDataGrid-cell--editable": {
     backgroundColor: green[100],
   },
+  "& .super-app-theme--error .MuiDataGrid-cell": {
+    backgroundColor: red[200],
+  },
+  "& .super-app-theme--error .MuiDataGrid-cell--editable": {
+    backgroundColor: red[100],
+  },
+  "& .super-app-theme--foreground-error .MuiDataGrid-cell": {
+    color: red[300],
+  },
+
   "& .super-app-theme--select .MuiDataGrid-cell": {
     backgroundColor: "transparent",
   },
@@ -64,6 +92,8 @@ const DataGridContainer = styled(Box)(({ theme }) => ({
   "& .MuiDataGrid-cell--editable": {
     backgroundColor: "white",
   },
+
+  "& .super-app-theme--actions .MuiDataGrid-actionsCell": { gridGap: 0 },
 }));
 
 export default DataGridContainer;

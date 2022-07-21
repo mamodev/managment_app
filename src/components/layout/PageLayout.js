@@ -18,12 +18,12 @@ import {
 } from "@mui/material";
 import WindowTabs from "components/modules/WindowTabs";
 import MenuDrawer from "components/templates/MenuDrawer";
-import { useWindowManagerContext } from "context/WindowManagerContext";
 import { useRef, useState } from "react";
 import { Outlet, useSearchParams } from "react-router-dom";
 import PageContainer from "./PageContainer";
 import anime from "animejs";
 import { useConfig } from "context/ConfigContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 
 const drawerWidth = 250;
 
@@ -85,13 +85,13 @@ export default function PageLayout() {
     openInNewTab,
     openAlwaysNewTab,
     toggleOpenInNewTab,
-    toggleOpenAlwaysNewTab,
+    toggleAlwaysOpenNewTab,
     openedWindows,
-  } = useWindowManagerContext();
+  } = useWindowManager();
 
   const { reloadConfig } = useConfig();
   return (
-    <Box>
+    <Stack sx={{ height: "100vh" }}>
       {minimal ? (
         <Outlet />
       ) : (
@@ -175,7 +175,7 @@ export default function PageLayout() {
                   </MenuItem>
                   <MenuItem
                     disabled={!openInNewTab}
-                    onClick={toggleOpenAlwaysNewTab}
+                    onClick={toggleAlwaysOpenNewTab}
                     sx={{ justifyContent: "space-between" }}
                     dense
                     divider
@@ -197,6 +197,6 @@ export default function PageLayout() {
           </PageContainer>
         </>
       )}
-    </Box>
+    </Stack>
   );
 }

@@ -2,7 +2,9 @@ import { Add, ShoppingBag } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
   Autocomplete,
+  Backdrop,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -15,10 +17,11 @@ import {
 import { Box } from "@mui/system";
 import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
-import ClientSelector from "components/modules/subjects/ClientSelector";
+import ClientSelector, { CreateClient } from "components/modules/subjects/ClientSelector";
+import { SubjectSelectorDialog } from "components/modules/subjects/SubjectSelector";
 import ApiDataList from "components/templates/ApiDataList";
 import { useAuthContext } from "context/AuthContext";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import useFilters from "hooks/useFilters";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
@@ -39,7 +42,7 @@ const AddOrder = (setOpen) => {
 };
 export default function OdvPro() {
   const { FilterOutlet, query } = useFilters(odv_pro_filters);
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
 
   const cellClickHandler = useCallback(
     ({ field, row: { odv_id, tipo_decod, numero } }) => {
@@ -94,11 +97,10 @@ export default function OdvPro() {
   );
 
   const toolbarActions = useMemo(() => [AddOrder(setOpen)], []);
-  console.log("Over");
   return (
     <Box sx={{ marginBottom: 3 }}>
       <Stack p={4} spacing={2}>
-        <Typography variant="h4">LISTA TESTATE</Typography>
+        <Typography variant="h4">LISTA ORDINI DI VENDITA</Typography>
         <ApiServer endpoint={endpoints.ODV_PRO_LIST} filters={query}>
           <ApiDataList
             columns={odv_pro_columns}
@@ -126,10 +128,7 @@ export default function OdvPro() {
 
 function CreateOrderDialog({ open, defaultClient, onClose: close }) {
   const { api, sede, vendId } = useAuthContext();
-  const { newWindow } = useWindowManagerContext();
-
-  const [client, setClient] = useState(null);
-  const [type, setType] = useState(null);
+  const { newWindow } = useWindowManager();
 
   const queryClient = useQueryClient();
   const { add } = endpoints.ODV_PRO_LIST(api);
@@ -140,61 +139,33 @@ function CreateOrderDialog({ open, defaultClient, onClose: close }) {
         url: `/odv_pro/${data.id}/details`,
         name: "Ordine",
         params: data.numero,
+        searchParams: { editing: true },
       });
       close();
       add.revalidate(data, queryClient);
     },
   });
 
-  useEffect(() => {
-    if (open) {
-      setClient(null);
-      setType(null);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (defaultClient) setClient(defaultClient);
-  }, [defaultClient]);
-
   return (
-    <Dialog open={open} onClose={() => close}>
-      <DialogTitle>Aggiungi</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} mt={1}>
-          <Autocomplete
-            value={type}
-            onChange={(e, v) => setType(v)}
-            isOptionEqualToValue={(option, value) => option.label === value.label}
-            options={[
-              { id: "V", label: "Ordine" },
-              { id: "P", label: "Progetto" },
-            ]}
-            renderInput={(props) => <TextField {...props} size="small" label="Tipo" />}
-          />
-          <ClientSelector value={client} onChange={(val) => setClient(val)} />
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <LoadingButton
-          loading={isLoading}
-          variant="contained"
-          disabled={!client || !type}
-          onClick={() =>
-            create({
-              in_tipo: type.id,
-              in_sede: sede,
-              in_cliente_id: client.id,
-              in_venditore: vendId,
-            })
-          }
-        >
-          Crea
-        </LoadingButton>
-        <Button variant="contained" color="error" onClick={() => close()}>
-          Chiudi
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <SubjectSelectorDialog
+        open={open}
+        onClose={close}
+        setValue={(client) => {
+          create({
+            in_tipo: "V",
+            in_sede: sede,
+            in_cliente_id: client.id,
+            in_venditore: vendId,
+          });
+        }}
+        title={"Seleziona un cliente "}
+        endpoint={endpoints.CLIENTS}
+        actions={<CreateClient variant="contained" color="secondary" />}
+      />
+    </>
   );
 }

@@ -10,7 +10,6 @@ const odv_pro_columns = [
     headerName: "Numero",
     sortable: false,
     flex: 1,
-
     cellClassName: "super-app-theme--link",
   },
   {

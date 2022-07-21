@@ -22,6 +22,7 @@ export default function DateInput({
   error = false,
   ...props
 }) {
+  console.log(value);
   const isValidDate = value instanceof Date && isFinite(value);
 
   return (

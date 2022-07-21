@@ -1,14 +1,15 @@
-import { LocationOn } from "@mui/icons-material";
-import { Box, Stack, Tooltip, Typography } from "@mui/material";
+import { Add, LocationOn } from "@mui/icons-material";
+import { Button, Stack, Tooltip, Typography } from "@mui/material";
 import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiFilterServer from "components/modules/filters/ApiFilterServer";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import ApiDataList from "components/templates/ApiDataList";
+import FormDialog from "components/templates/Form/FormDialog";
 import { default_filters, reverseDate } from "config/utils";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import useFilters from "hooks/useFilters";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const columns = [
   { field: "sede", headerName: "Sede", flex: 1 },
@@ -58,22 +59,31 @@ const filters = [
 
 export default function Movimenti() {
   const { query, FilterOutlet } = useFilters(filters);
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
 
   return (
     <Stack p={2} spacing={2}>
       <Typography variant="h4">LISTA MOVIMENTI</Typography>
       <ApiServer endpoint={endpoints.MOVEMENTS} filters={query}>
         <ApiDataList
-          verbose={true}
+          toolbarActions={[() => <AddMovement />]}
           columns={columns}
           filterOutlet={FilterOutlet}
           rowActionsPosition="end"
+          onRowClick={(e) =>
+            newWindow({
+              url: `/movimenti/${e.row.mov_id}`,
+              name: "Movimento",
+              params: e.row.mov_id,
+              w: 1000,
+            })
+          }
+          getRowClassName={() => `super-app-theme--select`}
           rowActions={[
             {
               icon: (params) =>
                 !params.row.mov_id ? (
-                  <Box></Box>
+                  ""
                 ) : (
                   <Tooltip title="Registra ubicazioni">
                     <LocationOn />
@@ -92,5 +102,75 @@ export default function Movimenti() {
         />
       </ApiServer>
     </Stack>
+  );
+}
+
+function AddMovement() {
+  const [open, setOpen] = useState(false);
+  const { newWindow } = useWindowManager();
+  const handleClose = () => setOpen(false);
+  const handleOpen = () => setOpen(true);
+
+  return (
+    <>
+      <Button startIcon={<Add />} onClick={handleOpen}>
+        Aggiungi
+      </Button>
+      {open && (
+        <FormDialog
+          open={open}
+          onClose={handleClose}
+          z
+          send={({ sede, causale_mov }) =>
+            newWindow({
+              url: `/movimenti/create`,
+              searchParams: { sede, causale_mov, editing: true },
+              w: 1000,
+            })
+          }
+          fields={[
+            {
+              xs: 12,
+              id: "sede",
+              Component: ApiFilterServer,
+              defaultValue: null,
+              componentProps: {
+                endpoint: endpoints.SITES,
+                children: AutocompleteFilter,
+                mapData: (data) => ({ label: data.dexb, sede: data.sede }),
+                dataName: "options",
+                placeholder: "Sede",
+                isOptionEqualToValue: (option, value) => option.label === value.label,
+                size: "small",
+                inputProps: { variant: "standard" },
+                sx: { minWidth: 500 },
+              },
+              valueGet: (val) => val?.sede,
+            },
+            {
+              xs: 12,
+              id: "causale_mov",
+              Component: ApiFilterServer,
+              defaultValue: null,
+              componentProps: {
+                endpoint: endpoints.DOCUMENT_TYPE,
+                children: AutocompleteFilter,
+                mapData: (data) => ({ label: data.dexb, cod: data.cod }),
+                dataName: "options",
+                placeholder: "Tipo documento",
+                isOptionEqualToValue: (option, value) => option.label === value.label,
+                size: "small",
+                inputProps: { variant: "standard" },
+                sx: { minWidth: 500 },
+              },
+              valueGet: (val) => val?.cod,
+            },
+          ]}
+          title="Crea movimento"
+          sendText="Crea"
+          closeText="Rinuncia"
+        />
+      )}
+    </>
   );
 }

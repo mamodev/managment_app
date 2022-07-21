@@ -9,6 +9,7 @@ export default function ApiServer({
   filters: { queryCount, ...filters } = {},
   params,
   verbose = false,
+  field = "data",
 }) {
   const { api } = useContext(AuthContext);
   const { key, func } = endpoint(api, params, filters);
@@ -30,18 +31,23 @@ export default function ApiServer({
     }
   }, [data, isFetching]);
 
-  useEffect(() => refetch(), [queryCount]);
+  useEffect(() => refetch(), [queryCount, refetch]);
+
   return (
     <>
       {dataState &&
         React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
-            return React.cloneElement(child, {
-              data: dataState,
-            });
+            return React.cloneElement(child, buildDataObject(dataState, field));
           }
           return child;
         })}
     </>
   );
+}
+
+function buildDataObject(data, field) {
+  const dataObject = {};
+  dataObject[field] = data;
+  return { ...dataObject };
 }

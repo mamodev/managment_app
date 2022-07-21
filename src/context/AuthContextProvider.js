@@ -14,12 +14,13 @@ function formatMessage(msg) {
 }
 export default function AuthContextProvider({ children }) {
   const [sede, setSede] = useState(null);
+
   const { enqueueSnackbar } = useSnackbar();
 
   const api = useRef(
     axios.create({
       baseURL: "http://164.132.224.238:3000/",
-      timeout: 1000,
+      timeout: 10000,
       headers: {
         Authorization:
           "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY29tbW9uX3VzZXIifQ.u7emJKa7Wgwyb2eJl8sl5ojQfdBk-Jne2TdeRWo3R9k",
@@ -42,8 +43,8 @@ export default function AuthContextProvider({ children }) {
         return response;
       },
       (error) => {
-        const hasMessage = !!error.response.headers["out-msg"];
-        const hasVariant = !!error.response.headers["out-rc"];
+        const hasMessage = !!error?.response?.headers["out-msg"];
+        const hasVariant = !!error?.response?.headers["out-rc"];
 
         if (hasMessage)
           enqueueSnackbar(
@@ -51,6 +52,7 @@ export default function AuthContextProvider({ children }) {
             hasVariant ? { variant: error.response.headers["out-rc"] } : { variant: "error" }
           );
         else enqueueSnackbar("C'è stato un errore!", { variant: "error" });
+        console.log(error);
         return Promise.reject(error);
       }
     );

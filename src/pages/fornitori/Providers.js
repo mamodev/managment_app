@@ -4,12 +4,12 @@ import ApiServer from "components/layout/ApiServer";
 import TextFilter from "components/modules/filters/TextFilter";
 import { CreateProvider } from "components/modules/subjects/ProviderSelector";
 import ApiDataList from "components/templates/ApiDataList";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import useFilters from "hooks/useFilters";
 import providers_columns from "./columns";
 
 export default function Providers() {
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
 
   const { FilterOutlet, query } = useFilters([
     {

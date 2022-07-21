@@ -4,7 +4,7 @@ import ApiServer from "components/layout/ApiServer";
 import TextFilter from "components/modules/filters/TextFilter";
 import { CreateClient } from "components/modules/subjects/ClientSelector";
 import ApiDataList from "components/templates/ApiDataList";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import useFilters from "hooks/useFilters";
 import clienti_columns from "./columns";
 
@@ -34,7 +34,7 @@ const filters = [
 ];
 
 export default function Clienti() {
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
   const { FilterOutlet, query } = useFilters(filters);
   return (
     <Stack p={3} spacing={2}>

@@ -1,16 +1,21 @@
+import React from "react";
 import PageLayout from "components/layout/PageLayout";
 import PageLoader from "components/layout/PageLoader";
+import { Route, Routes } from "react-router-dom";
+
+//TODO add lazy loading to this imports
 import ConfermaEmissioneODA from "pages/emissioneODA/conferma/ConfermaEmissioneODA";
 import EmissioneODA from "pages/emissioneODA/EmissioneODA";
 import Documenti from "pages/documenti/Documenti";
 import RegistrazioneArrivi from "pages/registrazione_arrivi/RegistrazioneArrivi";
 import RegistrazioneUbicazioni from "pages/registrazione_ubicazioni/RegistrazioneUbicazioni";
-import React from "react";
-import { Route, Routes } from "react-router-dom";
 import Giacenze from "pages/giacenze/Giacenze";
 import Movimenti from "pages/movimenti/Movimenti";
 import Ubicazione from "pages/ubicazione/Ubicazione";
 import PianifSped from "pages/pianif_sped/PianifSped";
+import MovimentoCreate from "pages/movimenti/[id]/MovimentoCreate";
+import MovimentoEdit from "pages/movimenti/[id]/MovimentoEdit";
+import Articoli from "pages/articoli/Articoli";
 
 const Clienti = React.lazy(() => import("pages/clienti/Clienti"));
 const ClientDetails = React.lazy(() => import("pages/clienti/[id]/ClientDetails"));
@@ -32,6 +37,15 @@ export default function Router() {
           element={
             <PageLoader>
               <Home />
+            </PageLoader>
+          }
+        />
+
+        <Route
+          path="articoli"
+          element={
+            <PageLoader>
+              <Articoli />
             </PageLoader>
           }
         />
@@ -150,14 +164,33 @@ export default function Router() {
             </PageLoader>
           }
         />
-        <Route
-          path="movimenti"
-          element={
-            <PageLoader>
-              <Movimenti />
-            </PageLoader>
-          }
-        />
+
+        <Route path="movimenti/*">
+          <Route
+            index
+            element={
+              <PageLoader>
+                <Movimenti />
+              </PageLoader>
+            }
+          />
+          <Route
+            path="create"
+            element={
+              <PageLoader>
+                <MovimentoCreate />
+              </PageLoader>
+            }
+          />
+          <Route
+            path=":id"
+            element={
+              <PageLoader>
+                <MovimentoEdit />
+              </PageLoader>
+            }
+          />
+        </Route>
         <Route
           path="registrazione_arrivi"
           element={

@@ -7,9 +7,8 @@ import ApiFilterServer from "components/modules/filters/ApiFilterServer";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import ApiDataList from "components/templates/ApiDataList";
 import { default_filters } from "config/utils";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import useFilters from "hooks/useFilters";
-import { useNavigate } from "react-router-dom";
 
 const columns = [
   { field: "sede", headerName: "Sede", flex: 1 },
@@ -45,7 +44,7 @@ const filters = [
 
 export default function Giacenze() {
   const { query, FilterOutlet } = useFilters(filters);
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
   return (
     <Stack p={2} spacing={2}>
       <Typography variant="h4">GIACENZE</Typography>

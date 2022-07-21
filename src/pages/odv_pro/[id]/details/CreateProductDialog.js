@@ -1,3 +1,4 @@
+import useOdvDetailedListAdd from "api/mutation/useOdvDetailedListAdd";
 import FindProduct from "components/modules/FindProduct";
 
 const { Add, ReplayOutlined } = require("@mui/icons-material");
@@ -21,12 +22,16 @@ const DEFAULT_STATE = {
   desc: "",
   qta: "1",
   sconto: "0",
-  codice: "",
   prezzo_un: "0",
 };
 
 //TODO fix imports and move to templates
-export default function CreateProductDialog({ id, ...dialogProps }) {
+export default function CreateProductDialog({
+  id,
+  project = null,
+  section = null,
+  ...dialogProps
+}) {
   const [open, setOpen] = useState(false);
   const [product, setProduct] = useState();
   const [fields, setFields] = useState(DEFAULT_STATE);
@@ -40,13 +45,8 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
     setFields(DEFAULT_STATE);
   };
 
-  const queryClient = useQueryClient();
-
-  const { api } = useAuthContext();
-  const { add } = endpoints.ODV_PRO_DETAILED_LIST(api, { id });
-  const { mutate, isLoading } = useMutation(add.func, {
+  const { mutate, isLoading } = useOdvDetailedListAdd({
     onSuccess: (data) => {
-      add.revalidate(data, queryClient);
       resetHandler();
       dialogProps.onClose();
     },
@@ -54,13 +54,13 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
 
   const createHandler = () =>
     mutate({
-      in_lista_id: null,
       in_odv_id: id,
-      in_prog_orig_id: null,
+      in_progetto_id: project,
+      in_struttura_id: section,
       in_art_id: product.art_id,
       in_marchio: product.marchio,
       in_linea: product.linea,
-      in_codice: fields.codice,
+      in_codice: product.codice,
       in_dex: product.art_dex,
       in_prezzo_un_lordo: parseFloat(fields.prezzo_un),
       in_sconto_vend: parseFloat(fields.sconto),
@@ -70,14 +70,14 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
 
   const isSendable =
     product &&
-    (!product.obblig_codice || (product.obblig_codice && fields.codice !== "")) &&
-    (!product.obblig_dex || (product.obblig_dex && product.art_dex !== "")) &&
-    (!product.obblig_linea || (product.obblig_linea && product.linea !== "")) &&
-    (!product.obblig_marchio || (product.obblig_marchio && product.marchio !== "")) &&
-    fields.qta !== "" &&
-    fields.sconto !== "" &&
-    product.cod_iva !== "" &&
-    fields.prezzo_un !== "";
+    (!product.obblig_codice || (product.obblig_codice && product.codice)) &&
+    (!product.obblig_dex || (product.obblig_dex && product.art_dex)) &&
+    (!product.obblig_linea || (product.obblig_linea && product.linea)) &&
+    (!product.obblig_marchio || (product.obblig_marchio && product.marchio)) &&
+    fields.qta &&
+    fields.sconto &&
+    product.cod_iva &&
+    fields.prezzo_un;
 
   return (
     <Dialog {...dialogProps} onClose={() => dialogProps.onClose() && resetHandler()}>
@@ -110,8 +110,8 @@ export default function CreateProductDialog({ id, ...dialogProps }) {
             <TextField
               variant="standard"
               disabled={!product || !product.modif_codice}
-              value={fields.codice}
-              onChange={(e) => setFields((old) => ({ ...old, codice: e.target.value }))}
+              value={product?.codice ? product.codice : ""}
+              onChange={(e) => setProduct((old) => ({ ...old, codice: e.target.value }))}
               label="Codice"
             />
             <TextField

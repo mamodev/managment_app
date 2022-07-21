@@ -1,183 +1,284 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-const WindowManagerContext = React.createContext({});
+import {
+  Box,
+  Button,
+  Dialog,
+  hexToRgb,
+  IconButton,
+  Portal,
+  Stack,
+  Typography,
+} from "@mui/material";
+import ApiDataGrid from "components/templates/ApiDataGrid/ApiDataGrid";
+import { green, grey, red, yellow } from "@mui/material/colors";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useDialog } from "context/DialogContext";
+import { Close, Fullscreen, FullscreenExit, Maximize, Minimize } from "@mui/icons-material";
+import OdvPro from "pages/odv_pro/OdvPro";
+import { rgba } from "config/utils";
+import Articoli from "pages/articoli/Articoli";
 
-function useWindowManagerContext() {
-  return useContext(WindowManagerContext);
+const WindowContext = createContext();
+
+function WindowProvider({ children }) {
+  const [state, setState] = useState([]);
+
+  const add = useCallback(
+    (startTime) =>
+      setState((old) => [
+        ...old,
+        <ReactWindow
+          open={true}
+          active={true}
+          index={2}
+          setActive={() => {}}
+          page={<InnerPage />}
+        />,
+      ]),
+    []
+  );
+
+  return <WindowContext.Provider value={{ add, state }}>{children}</WindowContext.Provider>;
 }
 
-function getCenteredLocation(w, h) {
-  const dualScreenLeft =
-    window.screenLeft !== undefined ? window.screenLeft : window.screenX;
-  const dualScreenTop =
-    window.screenTop !== undefined ? window.screenTop : window.screenY;
-
-  const width = window.innerWidth
-    ? window.innerWidth
-    : document.documentElement.clientWidth;
-
-  const height = window.innerHeight
-    ? window.innerHeight
-    : document.documentElement.clientHeight;
-
-  const systemZoom = width / window.screen.availWidth;
-  const left = (width - w) / 2 / systemZoom + dualScreenLeft;
-  const top = (height - h) / 2 / systemZoom + dualScreenTop;
-
-  return `width=${w}, 
-  height=${h}, 
-  top=${top}, 
-  left=${left}`;
+function useWindow() {
+  return useContext(WindowContext);
 }
 
-function WindowManagerContextProvider({ children }) {
-  const navigate = useNavigate();
-  const [firstLoad, setFirstLoad] = useState(true);
-  const [openInNewTab, setOpenInNewTab] = useState(true);
-  const [openAlwaysNewTab, setOpenAlwaysNewTab] = useState(false);
-  const [windows, setWindows] = useState({});
+const DEFAULT_MINIMIZE_BOUNDING_RECT = {
+  maximized: false,
+  top: null,
+  left: null,
+  width: null,
+  height: null,
+};
 
-  const removeWindow = (key) => {
-    setWindows((old) => {
-      const newWindows = { ...old };
-      delete newWindows[key];
-      return newWindows;
-    });
-  };
-  function open({
-    url,
-    minimal = true,
-    w = 700,
-    h = 500,
-    center = true,
-    name = "Figlia",
-    params = "",
-  }) {
-    if (openInNewTab) {
-      let pos_dim = `width=${w},height=${h}`;
-      if (center) pos_dim = getCenteredLocation(w, h);
-      let config = `scrollbars=no,status=no,location=no,resizable=0,toolbar=no,titlebar=no,menubar=no,${pos_dim}`;
+const BORDER_DELTA = 10;
+function ReactWindow({
+  children,
+  open,
+  name = "Lista ordini",
+  width = 800,
+  height = 500,
+  active,
+  setActive,
+  index,
+  page,
+}) {
+  const { portal } = useDialog();
+  const windowRef = useRef();
 
-      const key = openAlwaysNewTab ? name + " " + params : name;
-      if (windows[key]) windows[key].close();
+  const beforeMinimizeBoundingRect = useRef(DEFAULT_MINIMIZE_BOUNDING_RECT);
 
-      const newWindow = window.open(
-        `${url}${minimal ? "?minimal=true" : ""}`,
-        key,
-        config
-      );
+  const handleMouseDragMove = useCallback((e) => {
+    const { x, y } = windowRef.current.getBoundingClientRect();
+    const pageX = x + window.scrollX;
+    const pageY = y + window.scrollY;
+    windowRef.current.style.left = pageX + e.movementX + "px";
+    windowRef.current.style.top = pageY + e.movementY + "px";
+  }, []);
 
-      newWindow.onload = () =>
-        (newWindow.document.getElementsByTagName("title")[0].innerText = key);
-      newWindow.openNewWindow = window.openNewWindow
-        ? window.openNewWindow
-        : open;
+  const handleMaximize = () => {
+    if (beforeMinimizeBoundingRect.current.maximized) {
+      console.log("here");
 
-      setWindows((old) => {
-        const newWindows = { ...old };
-        newWindows[key] = newWindow;
-        return newWindows;
-      });
+      windowRef.current.style.left = beforeMinimizeBoundingRect.current.left + "px";
+      windowRef.current.style.top = beforeMinimizeBoundingRect.current.top + "px";
+      windowRef.current.style.height = beforeMinimizeBoundingRect.current.height + "px";
+      windowRef.current.style.width = beforeMinimizeBoundingRect.current.width + "px";
+      beforeMinimizeBoundingRect.current = DEFAULT_MINIMIZE_BOUNDING_RECT;
+    } else {
+      console.log("here22");
 
-      newWindow.addEventListener("beforeunload", () => removeWindow(key));
-    } else navigate(url);
-  }
+      const { top, left, height, width } = windowRef.current.getBoundingClientRect();
+      beforeMinimizeBoundingRect.current = { top, left, height, width, maximized: true };
 
-  useEffect(() => {
-    const storedOpenInNewtab = localStorage.getItem("openInNewTab");
-    if (storedOpenInNewtab === undefined)
-      localStorage.setItem("openInNewTab", true);
-    else setOpenInNewTab(storedOpenInNewtab === "true");
-
-    const storedOpenAlwaysNewTab = localStorage.getItem("openAlwaysNewTab");
-    if (storedOpenAlwaysNewTab === undefined)
-      localStorage.setItem("openAlwaysNewTab", false);
-    else setOpenAlwaysNewTab(storedOpenAlwaysNewTab === "true");
-
-    let openedWindows = localStorage.getItem("openedWindow");
-    if (openedWindows) {
-      const activeWindows = {};
-      openedWindows = JSON.parse(openedWindows);
-      for (const windowName of openedWindows) {
-        let w = window.open("", windowName);
-        if (w.document.location.href === "about:blank") {
-          w.close();
-          w = undefined;
-        }
-        if (w) {
-          activeWindows[windowName] = w;
-          activeWindows[windowName].addEventListener("beforeunload", () =>
-            removeWindow(windowName)
-          );
-        }
-      }
-
-      setWindows(activeWindows);
+      windowRef.current.style.left = window.scrollX + "px";
+      windowRef.current.style.top = window.scrollY + "px";
+      windowRef.current.style.height = document.documentElement.clientHeight + "px";
+      windowRef.current.style.width = window.innerWidth + "px";
+      beforeMinimizeBoundingRect.current.maximized = true;
     }
+  };
+  const handleBarMouseUp = () => {
+    window.removeEventListener("mousemove", handleMouseDragMove);
+  };
+  const handleBarMouseDown = () => {
+    window.addEventListener("mousemove", handleMouseDragMove);
+  };
 
-    setFirstLoad(false);
+  const mouseOnBorder = useRef(false);
+  const resizing = useRef(false);
+  const lastRect = useRef();
+
+  const handleMoveMouseBorder = useCallback((e) => {
+    const rect = windowRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left,
+      y = e.clientY - rect.top,
+      w = rect.width,
+      h = rect.height;
+
+    if (resizing.current) {
+      if (!lastRect.current) lastRect.current = { left: rect.left, top: rect.top, w, h };
+
+      const x = e.clientX - lastRect.current.left,
+        y = e.clientY - lastRect.current.top;
+
+      const direction = mouseOnBorder.current;
+      switch (direction) {
+        case "n":
+          windowRef.current.style.top = lastRect.current.top + y + "px";
+          windowRef.current.style.height = lastRect.current.h - y + "px";
+          break;
+        case "s":
+          windowRef.current.style.height = lastRect.current.h + (y - lastRect.current.h) + "px";
+          break;
+        case "w":
+          windowRef.current.style.left = lastRect.current.left + x + "px";
+          windowRef.current.style.width = lastRect.current.w - x + "px";
+          break;
+        case "e":
+          windowRef.current.style.width = lastRect.current.w + (x - lastRect.current.w) + "px";
+          break;
+        case "ne":
+          windowRef.current.style.top = lastRect.current.top + y + "px";
+          windowRef.current.style.height = lastRect.current.h - y + "px";
+
+          windowRef.current.style.width = lastRect.current.w + (x - lastRect.current.w) + "px";
+          break;
+        case "se":
+          windowRef.current.style.height = lastRect.current.h + (y - lastRect.current.h) + "px";
+          windowRef.current.style.width = lastRect.current.w + (x - lastRect.current.w) + "px";
+          break;
+        case "nw":
+          windowRef.current.style.top = lastRect.current.top + y + "px";
+          windowRef.current.style.height = lastRect.current.h - y + "px";
+
+          windowRef.current.style.left = lastRect.current.left + x + "px";
+          windowRef.current.style.width = lastRect.current.w - x + "px";
+          break;
+        case "sw":
+          windowRef.current.style.top = lastRect.current.top + y + "px";
+          windowRef.current.style.height = lastRect.current.h - y + "px";
+          windowRef.current.style.height = lastRect.current.h + (y - lastRect.current.h) + "px";
+          windowRef.current.style.left = lastRect.current.left + x + "px";
+          windowRef.current.style.width = lastRect.current.w - x + "px";
+          break;
+        default:
+      }
+    } else {
+      var c = ""; // which cursor to use
+      if (Math.abs(y) < BORDER_DELTA) c += "n";
+      else if (Math.abs(h - y) < BORDER_DELTA) c += "s";
+
+      if (Math.abs(x) < BORDER_DELTA) c += "w";
+      else if (Math.abs(w - x) < BORDER_DELTA) c += "e";
+
+      if (c) {
+        document.body.style.cursor = c + "-resize";
+        mouseOnBorder.current = c;
+      } else {
+        document.body.style.cursor = "default";
+        mouseOnBorder.current = false;
+      }
+    }
+  }, []);
+
+  const handleBorderMouseDown = useCallback((e) => {
+    if (mouseOnBorder.current) resizing.current = true;
+  }, []);
+
+  const handleBorderMouseUp = useCallback((e) => {
+    if (resizing.current) {
+      resizing.current = false;
+      mouseOnBorder.current = false;
+      lastRect.current = undefined;
+    }
   }, []);
 
   useEffect(() => {
-    if (!window.openNewWindow && !firstLoad) {
-      const arr = [];
-      for (let window in windows) {
-        arr.push(windows[window].name);
-      }
-      localStorage.setItem("openedWindow", JSON.stringify(arr));
-    }
-  }, [windows, firstLoad]);
+    window.addEventListener("mousedown", handleBorderMouseDown);
+    window.addEventListener("mouseup", handleBorderMouseUp);
+    window.addEventListener("mousemove", handleMoveMouseBorder);
+    return () => {
+      window.removeEventListener("mousemove", handleMoveMouseBorder);
+      window.removeEventListener("mousedown", handleBorderMouseDown);
+      window.removeEventListener("mouseup", handleBorderMouseUp);
+    };
+  });
 
-  const changeOpenInNewTab = useCallback(
-    () =>
-      setOpenInNewTab((old) => {
-        localStorage.setItem("openInNewTab", !old);
-        return !old;
-      }),
-    []
-  );
+  if (open)
+    return (
+      <Portal container={portal}>
+        <Box
+          ref={windowRef}
+          id="window-border"
+          onClick={() => setActive(index)}
+          sx={{
+            position: "absolute",
+            zIndex: active ? 99999999 : 9999999,
+            top: 100,
+            left: 100,
+            width,
+            height,
+            boxShadow: 2,
+            borderRadius: "10px",
+            bgcolor: rgba(255, 255, 255, 0.9),
+            backdropFilter: "blur(2px)",
+            border: 0.5,
+            borderColor: grey[600],
+          }}
+        >
+          <Stack
+            onMouseDown={handleBarMouseDown}
+            onMouseUp={handleBarMouseUp}
+            direction="row"
+            alignItems={"center"}
+            justifyContent="space-between"
+            sx={{
+              userSelect: "none",
+              bgcolor: "primary.main",
+              px: 1,
+              cursor: "move",
+              borderTopLeftRadius: "9px",
+              borderTopRightRadius: "9px",
+            }}
+          >
+            <Typography variant="subtitle1" color="common.white">
+              {name}
+            </Typography>
 
-  const changeOpenAlwaysNewTab = useCallback(
-    () =>
-      setOpenAlwaysNewTab((old) => {
-        localStorage.setItem("openAlwaysNewTab", !old);
-        return !old;
-      }),
-    []
-  );
-
-  function focusAll() {
-    for (let name in windows) {
-      window.open("", name);
-    }
-  }
-
-  function closeAll() {
-    for (let window in windows) {
-      const w = windows[window];
-      delete windows[window];
-      w.close();
-    }
-  }
-
-  return (
-    <WindowManagerContext.Provider
-      value={{
-        newWindow: window.openNewWindow ? window.openNewWindow : open,
-        toggleOpenInNewTab: changeOpenInNewTab,
-        toggleOpenAlwaysNewTab: changeOpenAlwaysNewTab,
-        focusAll,
-        closeAll,
-        openInNewTab,
-        openAlwaysNewTab,
-        openedWindows: Object.keys(windows).length,
-        windows: windows,
-      }}
-    >
-      {children}
-    </WindowManagerContext.Provider>
-  );
+            <Stack direction="row">
+              <IconButton size="small" onClick={handleMaximize}>
+                <Fullscreen sx={{ cursor: "pointer", color: "common.white" }} />
+              </IconButton>
+              <IconButton size="small">
+                <FullscreenExit sx={{ cursor: "pointer", color: "common.white" }} />
+              </IconButton>
+              <IconButton size="small">
+                <Close sx={{ cursor: "pointer", color: "common.white" }} />
+              </IconButton>
+            </Stack>
+          </Stack>
+          <Box sx={{ borderRadius: "10px", overflow: "scroll", maxHeight: "calc(100% - 36px)" }}>
+            {page}
+          </Box>
+        </Box>
+      </Portal>
+    );
+  else return null;
 }
 
-export default WindowManagerContext;
-export { WindowManagerContextProvider, useWindowManagerContext };
+function InnerPage(props) {
+  useEffect(() => console.log("rerender"));
+  return <Box>Pagina</Box>;
+}
+
+export { WindowProvider, useWindow, WindowContext };

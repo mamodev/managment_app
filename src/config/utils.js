@@ -14,6 +14,7 @@ const validate = (field, value, fields) => {
   if (rules) {
     switch (rules.type) {
       case "string":
+        if (value === null) return true;
         if (typeof value !== "string") {
           console.log(field, value, "is not a string");
           return false;
@@ -35,7 +36,7 @@ const isValid = (field, value, fields) => {
   return res;
 };
 
-const debounce = (func, wait, immediate) => {
+const debounce = (func, wait = 300, immediate) => {
   let timeout;
   return function executedFunction() {
     var context = this;
@@ -107,4 +108,13 @@ const default_filters = {
     },
   }),
 };
-export { formatDate, reverseDate, isValid, debounce, default_filters };
+
+const isNavigationKey = (key) =>
+  key === "Home" ||
+  key === "End" ||
+  key.indexOf("Arrow") === 0 ||
+  key.indexOf("Page") === 0 ||
+  key === " ";
+
+const rgba = (r, g, b, a) => `rgba(${r},${g},${b},${a})`;
+export { formatDate, reverseDate, isValid, debounce, default_filters, rgba, isNavigationKey };

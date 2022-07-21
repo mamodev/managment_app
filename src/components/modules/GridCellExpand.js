@@ -23,7 +23,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     left: 7,
   },*/
 }));
-export default function GridCellExpand({ width, value }) {
+export default function GridCellExpand({ width, value, align = "left" }) {
   const wrapper = useRef(null);
   const cellDiv = useRef(null);
   const cellValue = useRef(null);
@@ -86,9 +86,11 @@ export default function GridCellExpand({ width, value }) {
       <Box
         ref={cellValue}
         sx={{
+          flex: 1,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
+          textAlign: align,
         }}
       >
         {value}
@@ -112,7 +114,13 @@ export default function GridCellExpand({ width, value }) {
 
 function renderCellExpand(params) {
   const val = params.formattedValue ? params.formattedValue : params.value;
-  return <GridCellExpand value={val || ""} width={params.colDef.computedWidth} />;
+  return (
+    <GridCellExpand
+      value={val || ""}
+      width={params.colDef.computedWidth}
+      align={params.colDef.align}
+    />
+  );
 }
 
 function GridCellExpandEdit({ value, id, field, colDef: { computedWidth }, ...props }) {

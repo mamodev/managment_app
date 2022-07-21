@@ -1,8 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-
-import { persistQueryClient } from "react-query/persistQueryClient-experimental";
-import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental";
 
 export default function ReactQueryProvider({ children }) {
   const queryClient = useMemo(
@@ -13,26 +10,9 @@ export default function ReactQueryProvider({ children }) {
             refetchOnWindowFocus: false,
             refetchOnMount: false,
             refetchOnReconnect: false,
-            cacheTime: 1000 * 60 * 60 * 2,
+            cacheTime: 60 * 30,
           },
         },
-      }),
-    []
-  );
-
-  const localStoragePersistor = useMemo(
-    () =>
-      createWebStoragePersistor({
-        storage: window.localStorage,
-      }),
-    []
-  );
-
-  useEffect(
-    () =>
-      persistQueryClient({
-        queryClient,
-        persistor: localStoragePersistor,
       }),
     []
   );

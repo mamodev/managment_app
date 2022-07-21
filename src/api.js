@@ -1,6 +1,10 @@
 //OPTIMIZE add limit to querys
 //OPTIMIZE select param of GET querys
 
+async function emptyGET() {
+  return [];
+}
+
 async function GET(api, { table, profile, ...args }) {
   let query = table + (!!Object.keys(args).length ? "?" : "");
   for (let arg in args) {
@@ -60,7 +64,7 @@ const endpoints = {
   }),
 
   ODV_PRO_DETAILED_LIST: (api, { id }, filters = {}) => ({
-    key: ["ODV_PRO", "DETAILED_LIST", id],
+    key: ["ODV_PRO", "DETAILED_LIST", id, filters],
     func: () =>
       GET(api, {
         table: "v_odv_righe",
@@ -70,20 +74,22 @@ const endpoints = {
       }),
     update: {
       func: (data) => POST(api, { table: "odv_righe_upd", profile: "vend", data }),
-      revalidate: (data, queryClient) =>
-        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
-          old.map((e) => {
-            if (e.id === data?.id) return { ...e, ...data };
-            else return e;
-          })
-        ),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]);
+        queryClient.invalidateQueries(["ODV_PRO", "HEADER", id]);
+      },
     },
-    remove: {
+    move: {
       func: (data) => POST(api, { table: "odv_righe_del", profile: "vend", data }),
       revalidate: (data, queryClient) => {
-        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) =>
-          old.filter((e) => e.id !== data.id)
-        );
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]);
+      },
+    },
+    remove: {
+      func: (data) => POST(api, { table: "odv_righe_sposta", profile: "vend", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]);
+        queryClient.invalidateQueries(["ODV_PRO", "HEADER", id]);
       },
     },
 
@@ -91,8 +97,10 @@ const endpoints = {
     //TODO Aggiungere popup con causale
     cancel: {
       func: (data) => POST(api, { table: "odv_righe_ann", profile: "vend", data }),
-      revalidate: (data, queryClient) =>
-        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]);
+        queryClient.invalidateQueries(["ODV_PRO", "HEADER", id]);
+      },
     },
     add: {
       func: (data) =>
@@ -102,7 +110,8 @@ const endpoints = {
           data,
         }),
       revalidate: (data, queryClient) => {
-        queryClient.setQueryData(["ODV_PRO", "DETAILED_LIST", id], (old) => [data, ...old]);
+        queryClient.invalidateQueries(["ODV_PRO", "DETAILED_LIST", id]);
+        queryClient.invalidateQueries(["ODV_PRO", "HEADER", id]);
       },
     },
   }),
@@ -143,24 +152,24 @@ const endpoints = {
         ...filters,
       }),
   }),
+  ODV_PRO_STRUCTURE: (api, { id }, filters = {}) => ({
+    key: ["ODV_PRO_STRUCTURE", id, filters],
+    func: () =>
+      GET(api, {
+        table: "v_odv_strutt",
+        profile: "vend",
+        progetto_id: `eq.${id}`,
+        ...filters,
+      }),
+  }),
 
   SITES: (api, props, filters) => ({
-    key: ["SITES"],
+    key: ["SITES", filters],
     func: () =>
       GET(api, {
         table: "sedi",
         select: "sede,dexb",
         profile: "core",
-        ...filters,
-      }),
-  }),
-
-  PRO_FOR_ODV: (api, { id }, filters = {}) => ({
-    key: ["PRO_FOR_ODV", id, filters],
-    func: () =>
-      GET(api, {
-        table: "v_pro_per_odv",
-        profile: "vend",
         ...filters,
       }),
   }),
@@ -351,6 +360,7 @@ const endpoints = {
   ODA_FROM_ODV: (api, { id }, filters) => ({
     key: ["ODA_FROM_ODV", { id }],
     func: () => {
+      console.log("fetching");
       return GET(api, { table: "v_oda_da_odv", profile: "maga", odv_id: `eq.${id}` });
     },
     update: {
@@ -361,8 +371,8 @@ const endpoints = {
           data: { in_odv_riga_id, in_acquistare_qta },
         }),
       revalidate: (data, queryClient) => {
-        queryClient.invalidateQueries(["ODA_FROM_ODV", { id }]);
-        queryClient.invalidateQueries(["ODA_FROM_ODV_CONFIRM", { id }]);
+        queryClient.invalidateQueries(["ODA_FROM_ODV"]);
+        queryClient.invalidateQueries(["ODA_FROM_ODV_CONFIRM"]);
       },
     },
   }),
@@ -398,13 +408,63 @@ const endpoints = {
   }),
 
   MOVEMENTS: (api, params = {}, filters = {}) => ({
-    key: ["MOVEMENTS"],
+    key: ["MOVEMENTS", params, filters],
     func: () => GET(api, { table: "v_mov_righe", profile: "maga", ...filters }),
+    create: {
+      func: ({ sede, causale_mov }) =>
+        POST(api, {
+          table: "mov_mag_cud_f",
+          profile: "maga",
+          data: {
+            in_operaz: "C",
+            in_testata: {
+              id: null,
+              numero: null,
+              del: null,
+              tipo_doc_mag: null,
+              causale_mov,
+              doc_est_nr: null,
+              doc_est_data: null,
+              data_mov: null,
+              doc_int_ricev_id: null,
+              sede,
+              controp_id: null,
+              ind_diverso_id: null,
+              fatturare: null,
+              fatt_sospesa: null,
+              fatturato: null,
+              note_interne: null,
+              caus_annullam: null,
+              data_annullam: null,
+            },
+            in_righe: [],
+          },
+        }),
+      revalidate: () => {},
+    },
   }),
 
   MOVEMENT: (api, { id }, filters = {}) => ({
-    key: ["MOVEMENTS", id],
+    key: ["MOVEMENTS", id, filters],
     func: () => GET(api, { table: "v_mov_test", profile: "maga", mov_id: `eq.${id}`, ...filters }),
+  }),
+
+  MOVEMENT_DETAILS: (api, { id }, filters = {}) => ({
+    key: ["MOVEMENTS", id, filters, "DETAILS"],
+    func: () => {
+      return GET(api, { table: "v_mov_test_cud", profile: "maga", id: `eq.${id}` });
+    },
+    update: {
+      func: (data) => POST(api, { table: "mov_mag_cud_f", profile: "maga", data }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["MOVEMENTS"]);
+      },
+    },
+  }),
+
+  MOVEMENT_DETAILS_LIST: (api, { id }, filters = {}) => ({
+    key: ["MOVEMENTS", id, filters, "DETAILS", "LIST"],
+    func: () => GET(api, { table: "v_mov_righe_cud", profile: "maga", mov_id: `eq.${id}` }),
   }),
 
   LOCATION: (api, { id }, filters = {}) => ({
@@ -446,7 +506,7 @@ const endpoints = {
   }),
 
   WAREHOUSES: (api, params = {}, filters = {}) => ({
-    key: ["WHEREHOUSES"],
+    key: ["WHEREHOUSES", params, filters],
     func: () => GET(api, { table: "magazzini", profile: "base", ...filters }),
   }),
 
@@ -476,6 +536,83 @@ const endpoints = {
         queryClient.invalidateQueries(["SHIPMENT_PLANNING"]);
       },
     },
+  }),
+
+  DOCUMENT_TYPE: (api, id, filters = {}) => ({
+    key: ["DOCUMENT_TYPE", id, filters],
+    func: () =>
+      GET(api, {
+        table: "v_tipi_doc_mag",
+        profile: "base",
+        cod: id ? `eq.${id}` : undefined,
+        ...filters,
+      }),
+  }),
+
+  PRODUCTS_DETAIL: (api, params = {}, filters = {}) => ({
+    key: ["PRODUCTS_DETAILS"],
+    func: () => {
+      return GET(api, { table: "v_categ_e_art", profile: "base", ...filters });
+    },
+    update: {
+      func: (data) =>
+        POST(api, { table: "articolo_cud", profile: "base", data: { in_operaz: "U", ...data } }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["PRODUCTS_DETAILS"]);
+      },
+    },
+    add: {
+      func: (data) =>
+        POST(api, { table: "articolo_cud", profile: "base", data: { in_operaz: "C", ...data } }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["PRODUCTS_DETAILS"]);
+      },
+    },
+    delete: {
+      func: (data) =>
+        POST(api, { table: "articolo_cud", profile: "base", data: { in_operaz: "D", ...data } }),
+      revalidate: (data, queryClient) => {
+        queryClient.invalidateQueries(["PRODUCTS_DETAILS"]);
+      },
+    },
+  }),
+
+  EMPTY: () => ({
+    key: ["EMPTY"],
+    func: () => emptyGET(),
+  }),
+  IVA: (api, params = {}, filters = {}) => ({
+    key: ["IVA", params, filters],
+    func: () => GET(api, { table: "codici_iva", profile: "base", ...filters }),
+  }),
+  ACCOUNTING_CATEGORIES: (api, params = {}, filters = {}) => ({
+    key: ["ACCOUNTING_CATEGORIES", params, filters],
+    func: () => GET(api, { table: "categorie_contabili", profile: "base", ...filters }),
+  }),
+
+  PRODUCTS_TYPE: (api, params = {}, filters = {}) => ({
+    key: ["PRODUCTS_TYPE", params, filters],
+    func: () =>
+      GET(api, {
+        table: "domini",
+        profile: "core",
+        ambito: "eq.articolo",
+        dominio: "eq.tipo",
+        order: "seq",
+        ...filters,
+      }),
+  }),
+
+  UM: (api, params = {}, filters = {}) => ({
+    key: ["UM", params, filters],
+    func: () =>
+      GET(api, {
+        table: "domini",
+        profile: "core",
+        ambito: "eq.base",
+        dominio: "eq.um",
+        ...filters,
+      }),
   }),
 };
 

@@ -5,13 +5,16 @@ import { endpoints } from "api";
 import ApiServer from "components/layout/ApiServer";
 import ApiDataList from "components/templates/ApiDataList";
 import { useAuthContext } from "context/AuthContext";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
+import { useSnackbar } from "notistack";
+import { useEffect } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 
 export default function EmissioneODA() {
   const { id } = useParams();
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
+  const { enqueueSnackbar } = useSnackbar();
 
   const { api } = useAuthContext();
   const { func, revalidate } = endpoints.ODA_FROM_ODV(api, { id }).update;
@@ -21,7 +24,17 @@ export default function EmissioneODA() {
 
   const handleCellEditCommit = ({ field, value }, row) => {
     row[field] = value;
-    console.log(row);
+    queryClient.setQueryData(["ODA_FROM_ODV", { id }], (old) => {
+      const newVal = [...old];
+      let index = 0;
+      for (let i = 0; i < newVal.length; ++i)
+        if (newVal[i].odv_riga_id === row.odv_riga_id) index = i;
+
+      if (index !== -1) newVal[index] = row;
+
+      return newVal;
+    });
+
     mutate({ in_acquistare_qta: row.acquistare_qta, in_odv_riga_id: row.odv_riga_id });
   };
 
@@ -31,7 +44,9 @@ export default function EmissioneODA() {
         <Title />
       </ApiServer>
       <ApiServer endpoint={endpoints.ODA_FROM_ODV} params={{ id }}>
+        <Test></Test>
         <ApiDataList
+          verbose={true}
           onCellEditCommit={handleCellEditCommit}
           toolbarActions={[
             () => (
@@ -69,9 +84,15 @@ export default function EmissioneODA() {
               type: "number",
               flex: 1,
               preProcessEditCellProps: ({ props, row }) => {
+                const isError =
+                  typeof props.value === "number" && row.qta_da_ordinare < props.value;
+                if (isError)
+                  enqueueSnackbar("La quantità non deve superare la quantità da acquistare", {
+                    variant: "error",
+                  });
                 return {
                   ...props,
-                  error: typeof props.value === "number" && row.qta_da_ordinare < props.value,
+                  error: isError,
                 };
               },
             },
@@ -90,4 +111,16 @@ function Title({ data }) {
       Ordine di acquisto per {data.tipo_decod} {data.numero} ({data.denom})
     </Typography>
   );
+}
+
+function Test({ data }) {
+  useEffect(
+    () =>
+      console.log(
+        "Data",
+        data.map((e) => e.acquistare_qta)
+      ),
+    [data]
+  );
+  return <></>;
 }

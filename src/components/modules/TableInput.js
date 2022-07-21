@@ -9,10 +9,31 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Typography,
 } from "@mui/material";
 import DateInput from "components/base/DateInput";
+import { formatDate, reverseDate } from "config/utils";
 import { useCallback, useEffect, useState } from "react";
+import ClientSelector from "./subjects/ClientSelector";
 import ProviderSelector from "./subjects/ProviderSelector";
+import SubjectSelector from "./subjects/SubjectSelector";
+
+const preprocess = (data, { type }) => {
+  switch (type) {
+    case "subject":
+    case "provider":
+    case "client":
+      return data.denom;
+    case "date":
+      if (data) return reverseDate(formatDate(data), "/");
+      else return "Nessun valore";
+    case "string":
+    case "number":
+      return data;
+    default:
+      return JSON.stringify(data);
+  }
+};
 
 const HeaderCell = styled(TableCell)(({ theme }) => ({
   fontWeight: "600",
@@ -63,6 +84,18 @@ function getInputComponent(type) {
         props: {},
         handleChange: standardInputHandleChange,
       };
+    case "client":
+      return {
+        component: ClientSelector,
+        props: {},
+        handleChange: standardInputHandleChange,
+      };
+    case "subject":
+      return {
+        component: SubjectSelector,
+        props: {},
+        handleChange: standardInputHandleChange,
+      };
     default:
       return {
         component: TextField,
@@ -88,8 +121,13 @@ function getDefaultValue(type) {
 }
 
 //TODO add endpoint validation (Utils)
-export default function TableInput({ container = Paper, fields = [], onChange }) {
-  const [state, setState] = useState({});
+export default function TableInput({
+  container = Paper,
+  fields = [],
+  onChange,
+  initialState = {},
+}) {
+  const [state, setState] = useState(initialState);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const sendUpdates = useCallback(
@@ -109,6 +147,8 @@ export default function TableInput({ container = Paper, fields = [], onChange })
   useEffect(() => sendUpdates(state), [state, sendUpdates]);
 
   useEffect(() => {
+    if (Object.keys(initialState).length !== 0) return;
+
     const newState = {};
     for (const { field, type } of fields) newState[field] = getDefaultValue(type);
 
@@ -144,7 +184,7 @@ export default function TableInput({ container = Paper, fields = [], onChange })
                           : undefined
                       }
                       placeholder={e.headerName}
-                      value={state[e.field]}
+                      value={state[e.field] ? state[e.field] : getDefaultValue(e.type)}
                       onChange={handleChange(setState, e.field)}
                       autoComplete="off"
                     />
@@ -152,6 +192,89 @@ export default function TableInput({ container = Paper, fields = [], onChange })
                 );
               })}
           </TableRow>
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+//TODO add endpoint validation (Utils)
+export function VerticalInputTable({
+  container = Paper,
+  fields = [],
+  onChange,
+  initialState = {},
+}) {
+  const [state, setState] = useState(initialState);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const sendUpdates = useCallback(
+    debounce((val) => {
+      let sendable = true;
+      for (let { field, required, type } of fields)
+        if (required && val[field] === getDefaultValue(type)) {
+          sendable = false;
+          break;
+        }
+
+      onChange?.({ ...val, sendable });
+    }),
+    [fields]
+  );
+
+  useEffect(() => setState(initialState), [initialState, fields]);
+
+  useEffect(() => sendUpdates(state), [state, sendUpdates]);
+
+  useEffect(() => {
+    if (Object.keys(initialState).length !== 0) {
+      return;
+    }
+
+    const newState = {};
+    for (const { field, type } of fields) newState[field] = getDefaultValue(type);
+
+    setState(newState);
+  }, [setState, fields]);
+
+  return (
+    <TableContainer component={container}>
+      <Table>
+        <TableBody>
+          {Object.keys(state).length !== 0 &&
+            fields.map((e) => {
+              const { component: Component, props, handleChange } = getInputComponent(e.type);
+
+              return (
+                <TableRow key={e.field}>
+                  <HeaderCell sx={{ fontWeight: 600, backgroundColor: "primary.light" }}>
+                    {e.headerName}
+                  </HeaderCell>
+                  <BodyCell>
+                    {e.editable !== undefined && e.editable === false ? (
+                      <Typography>
+                        {state[e.field] ? preprocess(state[e.field], e) : "Nessun valore"}
+                      </Typography>
+                    ) : (
+                      <Component
+                        {...props}
+                        {...e.props}
+                        error={e.required && state[e.field] === getDefaultValue(e.type)}
+                        helperText={
+                          e.required && state[e.field] === getDefaultValue(e.type)
+                            ? "Campo necessario"
+                            : undefined
+                        }
+                        placeholder={e.headerName}
+                        value={state[e.field] ? state[e.field] : getDefaultValue(e.type)}
+                        onChange={handleChange(setState, e.field)}
+                        autoComplete="off"
+                      />
+                    )}
+                  </BodyCell>
+                </TableRow>
+              );
+            })}
         </TableBody>
       </Table>
     </TableContainer>

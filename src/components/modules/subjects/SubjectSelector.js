@@ -43,8 +43,8 @@ export default function SubjectSelector({
   onChange: setValue,
   error = false,
   helperText,
-  title = "Seleziona un soggetto",
-  buttonText = "Seleziona soggetto",
+  title = "Seleziona un sogetto",
+  buttonText = "Soggetto",
   endpoint = endpoints.SUBJECTS,
   actions = [],
 }) {
@@ -113,8 +113,8 @@ function SubjectSelectorDialog({ open, onClose: close, setValue, title, endpoint
   return (
     <Dialog open={!!open} onClose={close} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ bgcolor: "primary.main", fontWeight: 500, color: "common.white" }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          {title}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+          <Box>{title}</Box>
           <TextField
             value={query}
             sx={{ flex: 1, maxWidth: 800 }}
@@ -184,3 +184,5 @@ function SubjectSelectorDialog({ open, onClose: close, setValue, title, endpoint
     </Dialog>
   );
 }
+
+export { SubjectSelectorDialog };

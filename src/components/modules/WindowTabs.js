@@ -1,11 +1,11 @@
 import { Close } from "@mui/icons-material";
 import { Grid, IconButton, Stack, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import { useMemo } from "react";
 
 export default function WindowTabs() {
-  const { windows } = useWindowManagerContext();
+  const { windows } = useWindowManager();
   const windowTabs = useMemo(() => {
     const arr = [];
     for (const key in windows)
@@ -59,11 +59,7 @@ export default function WindowTabs() {
               >
                 <Typography>{e.id}</Typography>
               </Box>
-              <IconButton
-                size="small"
-                color="inherit"
-                onClick={() => e.window.close()}
-              >
+              <IconButton size="small" color="inherit" onClick={() => e.window.close()}>
                 <Close sx={{ fontSize: 15 }} />
               </IconButton>
             </Stack>

@@ -6,7 +6,7 @@ import ApiFilterServer from "components/modules/filters/ApiFilterServer";
 import AutocompleteFilter from "components/modules/filters/AutocompleteFilter";
 import ApiDataList from "components/templates/ApiDataList";
 import { default_filters, reverseDate } from "config/utils";
-import { useWindowManagerContext } from "context/WindowManagerContext";
+import { useWindowManager } from "context/NewWindowManagerContext";
 import useFilters from "hooks/useFilters";
 
 const columns = [
@@ -68,7 +68,7 @@ const filters = [
 
 export default function Documenti() {
   const { FilterOutlet, query } = useFilters(filters);
-  const { newWindow } = useWindowManagerContext();
+  const { newWindow } = useWindowManager();
 
   return (
     <Stack p={2} spacing={2}>
@@ -79,6 +79,14 @@ export default function Documenti() {
           columns={columns}
           filterOutlet={FilterOutlet}
           rowActionsPosition="end"
+          onRowClick={(e) =>
+            newWindow({
+              url: `/movimenti/${e.row.mov_id}`,
+              name: "Movimento",
+              params: e.row.mov_id,
+              w: 1000,
+            })
+          }
           rowActions={[
             {
               icon: (params) =>
